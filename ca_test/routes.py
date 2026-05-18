@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 
-ca_tests_bp = Blueprint("ca_tests", __name__)
+ca_tests_bp = Blueprint("ca_test", __name__)
 
 
 @ca_tests_bp.route("/")

@@ -1,12 +1,509 @@
 {% extends "base.html" %}
 
-{% block title %}Page — Staff Management Software{% endblock %}
+{% block title %}Students — Staff Management Software{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/student_list.css') }}">
+{% endblock %}
 
 {% block content %}
-<div class="page-shell">
-  <section class="page-card" style="padding: 30px;">
-    <h1>Page Connected</h1>
-    <p>This page is loading through base.html.</p>
+
+<div class="students-studio"
+     data-list-url="{{ url_for('students.student_list_api') }}"
+     data-create-url="{{ url_for('students.create_student_api') }}"
+     data-update-url-template="{{ url_for('students.update_student_api', admission_number='__ADM__') }}"
+     data-delete-url-template="{{ url_for('students.delete_student_api', admission_number='__ADM__') }}"
+     data-bulk-delete-url="{{ url_for('students.bulk_delete_students_api') }}">
+
+  <div id="studentToastHost" class="student-toast-host"></div>
+
+  <section class="student-ribbon">
+    <div class="ribbon-glow glow-one"></div>
+    <div class="ribbon-glow glow-two"></div>
+
+    <div class="ribbon-copy">
+      <div class="student-crumb">
+        <a href="{{ url_for('dashboard.dashboard') }}">
+          <i class="fa-solid fa-house-chimney"></i>
+          Home
+        </a>
+        <span>/</span>
+        <strong>Student Records Studio</strong>
+      </div>
+
+      <span class="ribbon-badge">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        Live CSV Database Manager
+      </span>
+
+      <h1>Classroom Records Studio</h1>
+      <p>
+        A fresh workspace for adding, editing, deleting, transferring, selecting,
+        exporting and correcting student records directly inside your CSV database.
+      </p>
+
+      <div class="ribbon-actions">
+        <button type="button" class="studio-btn primary" id="openAddStudentModal">
+          <i class="fa-solid fa-user-plus"></i>
+          Add Student
+        </button>
+
+        <button type="button" class="studio-btn aqua" id="refreshStudentsBtn">
+          <i class="fa-solid fa-rotate"></i>
+          Refresh Table
+        </button>
+
+        <button type="button" class="studio-btn ghost" id="exportStudentsBtn">
+          <i class="fa-solid fa-file-arrow-down"></i>
+          Export Visible
+        </button>
+      </div>
+    </div>
+
+    <div class="ribbon-art">
+      <div class="orb-card main-orb">
+        <i class="fa-solid fa-children"></i>
+        <strong id="heroTotalStudents">{{ stats.total_students }}</strong>
+        <span>Students</span>
+      </div>
+
+      <!-- <div class="floating-chip chip-one">
+        <i class="fa-solid fa-pen-to-square"></i>
+        Edit CSV
+      </div> -->
+
+      <!-- <div class="floating-chip chip-two">
+        <i class="fa-solid fa-layer-group"></i>
+        {{ stats.total_arms }} Arms
+      </div> -->
+<!-- 
+      <div class="floating-chip chip-three">
+        <i class="fa-solid fa-bolt"></i>
+        Real-time UI
+      </div> -->
+    </div>
   </section>
+
+
+  <section class="studio-stats">
+    <article class="studio-stat">
+      <span class="stat-bubble sky"><i class="fa-solid fa-users-viewfinder"></i></span>
+      <div>
+        <small>Total Students</small>
+        <strong id="statTotalStudents">{{ stats.total_students }}</strong>
+      </div>
+    </article>
+
+    <article class="studio-stat">
+      <span class="stat-bubble grape"><i class="fa-solid fa-school-circle-check"></i></span>
+      <div>
+        <small>Class Levels</small>
+        <strong id="statTotalLevels">{{ stats.total_levels }}</strong>
+      </div>
+    </article>
+
+    <article class="studio-stat">
+      <span class="stat-bubble mint"><i class="fa-solid fa-layer-group"></i></span>
+      <div>
+        <small>Class Arms</small>
+        <strong id="statTotalArms">{{ stats.total_arms }}</strong>
+      </div>
+    </article>
+
+    <article class="studio-stat">
+      <span class="stat-bubble sun"><i class="fa-solid fa-phone-volume"></i></span>
+      <div>
+        <small>Missing Phone</small>
+        <strong id="statMissingPhone">{{ stats.missing_phone }}</strong>
+      </div>
+    </article>
+  </section>
+
+
+  <section class="student-command-deck">
+
+    <div class="level-palette" id="levelTabs">
+      <button type="button" class="level-capsule active" data-level="ALL">
+        <i class="fa-solid fa-border-all"></i>
+        All
+        <span id="countALL">{{ stats.total_students }}</span>
+      </button>
+
+      {% for level in level_order %}
+      <button type="button" class="level-capsule" data-level="{{ level }}">
+        <i class="fa-solid fa-book-open-reader"></i>
+        {{ level }}
+        <span id="count{{ level }}">{{ stats.level_counts[level] }}</span>
+      </button>
+      {% endfor %}
+    </div>
+
+    <div class="smart-tools">
+      <label class="smart-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" id="studentSearchInput" placeholder="Search name, admission no, phone, class...">
+      </label>
+
+      <select id="armFilter">
+        <option value="ALL">All Arms</option>
+      </select>
+
+      <select id="bulkClassSelect">
+        <option value="">Move selected to...</option>
+        <option value="JSS1A">JSS1A</option>
+        <option value="JSS1B">JSS1B</option>
+        <option value="JSS1C">JSS1C</option>
+        <option value="JSS2A">JSS2A</option>
+        <option value="JSS2B">JSS2B</option>
+        <option value="JSS2C">JSS2C</option>
+        <option value="JSS3A">JSS3A</option>
+        <option value="JSS3B">JSS3B</option>
+        <option value="JSS3C">JSS3C</option>
+        <option value="SS1A">SS1A</option>
+        <option value="SS1B">SS1B</option>
+        <option value="SS1C">SS1C</option>
+        <option value="SS2A">SS2A</option>
+        <option value="SS2B">SS2B</option>
+        <option value="SS2C">SS2C</option>
+        <option value="SS3A">SS3A</option>
+        <option value="SS3B">SS3B</option>
+        <option value="SS3C">SS3C</option>
+      </select>
+    </div>
+
+  </section>
+
+
+  <section class="student-table-stage">
+
+    <div class="table-stage-head">
+      <div>
+        <span class="stage-kicker">
+          <i class="fa-solid fa-database"></i>
+          Records Table
+        </span>
+        <h2 id="activeLevelLabel">All Students</h2>
+        <p id="tableResultCount">{{ stats.total_students }} records showing</p>
+      </div>
+
+      <div class="table-action-cluster">
+        <button type="button" class="mini-tool danger" id="bulkDeleteBtn">
+          <i class="fa-solid fa-trash-can"></i>
+          Delete Selected
+        </button>
+
+        <button type="button" class="mini-tool" id="densityBtn">
+          <i class="fa-solid fa-table-cells"></i>
+          Density
+        </button>
+
+        <button type="button" class="mini-tool" id="sortNameBtn">
+          <i class="fa-solid fa-arrow-down-a-z"></i>
+          Sort Name
+        </button>
+      </div>
+    </div>
+
+    <div class="selection-strip" id="selectionStrip">
+      <span>
+        <i class="fa-solid fa-circle-check"></i>
+        <strong id="selectedCount">0</strong> selected
+      </span>
+
+      <button type="button" id="clearSelectionBtn">
+        Clear Selection
+      </button>
+    </div>
+
+    <div class="students-table-wrap">
+      <table class="studio-table" id="studentsTable">
+        <thead>
+          <tr>
+            <th>
+              <input type="checkbox" id="selectAllStudents">
+            </th>
+            <th>S/N</th>
+            <th>Student Identity</th>
+            <th>Admission No.</th>
+            <th>Class Arm</th>
+            <th>Level</th>
+            <th>Phone</th>
+            <th>Record State</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody id="studentsTableBody">
+          {% for student in students %}
+          <tr class="student-row"
+              data-admission="{{ student.admission_number }}"
+              data-last-name="{{ student.last_name }}"
+              data-first-name="{{ student.first_name }}"
+              data-other-names="{{ student.other_names }}"
+              data-phone="{{ student.phone }}"
+              data-arm="{{ student.class_arm }}"
+              data-level="{{ student.class_category }}"
+              data-name="{{ student.full_name }}">
+
+            <td>
+              <input type="checkbox" class="row-check" value="{{ student.admission_number }}">
+            </td>
+
+            <td class="serial">{{ loop.index }}</td>
+
+            <td>
+              <button type="button" class="identity-card view-student-btn">
+                <span class="student-avatar">
+                  {{ student.first_name[:1] or "S" }}{{ student.last_name[:1] or "" }}
+                </span>
+
+                <span>
+                  <strong>{{ student.full_name }}</strong>
+                  <small>
+                    <i class="fa-solid fa-id-card"></i>
+                    {{ student.admission_number }}
+                  </small>
+                </span>
+              </button>
+            </td>
+
+            <td>
+              <span class="admission-chip">{{ student.admission_number }}</span>
+            </td>
+
+            <td>
+              <span class="class-chip">{{ student.class_arm }}</span>
+            </td>
+
+            <td>
+              <span class="level-chip">{{ student.class_category }}</span>
+            </td>
+
+            <td>
+              {% if student.phone %}
+              <a href="tel:{{ student.phone }}" class="phone-chip">
+                <i class="fa-solid fa-phone"></i>
+                {{ student.phone }}
+              </a>
+              {% else %}
+              <span class="phone-chip missing">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                Missing
+              </span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if student.phone %}
+              <span class="record-state complete">
+                <i class="fa-solid fa-circle-check"></i>
+                Complete
+              </span>
+              {% else %}
+              <span class="record-state warning">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+                Needs Update
+              </span>
+              {% endif %}
+            </td>
+
+            <td>
+              <div class="row-actions">
+                <button type="button" class="icon-action view-student-btn" title="View">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+
+                <button type="button" class="icon-action edit-student-btn" title="Edit">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+
+                <button type="button" class="icon-action duplicate-student-btn" title="Duplicate">
+                  <i class="fa-solid fa-copy"></i>
+                </button>
+
+                <button type="button" class="icon-action delete-student-btn danger" title="Delete">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </td>
+
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="empty-state" id="emptyState">
+      <i class="fa-solid fa-user-magnifying-glass"></i>
+      <h3>No matching student</h3>
+      <p>Try another keyword, class level, or class arm filter.</p>
+    </div>
+
+  </section>
+
 </div>
+
+
+<div class="student-modal-backdrop" id="studentModalBackdrop"></div>
+
+<section class="student-profile-modal" id="studentViewModal" aria-hidden="true">
+  <button type="button" class="modal-close-btn" data-close-modal>
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+
+  <div class="profile-banner">
+    <span class="modal-avatar" id="viewAvatar">ST</span>
+
+    <div>
+      <small>Student Profile Card</small>
+      <h2 id="viewFullName">Student Name</h2>
+      <p id="viewAdmission">Admission Number</p>
+    </div>
+  </div>
+
+  <div class="profile-grid">
+    <div><span>Last Name</span><strong id="viewLastName">—</strong></div>
+    <div><span>First Name</span><strong id="viewFirstName">—</strong></div>
+    <div><span>Other Names</span><strong id="viewOtherNames">—</strong></div>
+    <div><span>Class Arm</span><strong id="viewClassArm">—</strong></div>
+    <div><span>Class Category</span><strong id="viewClassCategory">—</strong></div>
+    <div><span>Phone</span><strong id="viewPhone">—</strong></div>
+  </div>
+
+  <div class="profile-actions">
+    <a href="#" id="viewCallBtn">
+      <i class="fa-solid fa-phone-volume"></i>
+      Call
+    </a>
+
+    <button type="button" id="viewCopyBtn">
+      <i class="fa-solid fa-copy"></i>
+      Copy Details
+    </button>
+
+    <button type="button" id="viewEditBtn">
+      <i class="fa-solid fa-pen-to-square"></i>
+      Edit Record
+    </button>
+  </div>
+</section>
+
+
+<section class="student-form-modal" id="studentFormModal" aria-hidden="true">
+  <button type="button" class="modal-close-btn" data-close-modal>
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+
+  <div class="form-modal-head">
+    <span>
+      <i class="fa-solid fa-user-pen"></i>
+    </span>
+
+    <div>
+      <small id="formModeText">Create Record</small>
+      <h2 id="studentFormTitle">Add New Student</h2>
+      <p>Changes are saved directly into the correct class CSV file.</p>
+    </div>
+  </div>
+
+  <form id="studentRecordForm" class="student-record-form">
+    <input type="hidden" id="originalAdmission">
+
+    <div class="form-grid">
+      <label>
+        <span>Admission Number</span>
+        <input type="text" id="admissionNumber" required placeholder="std000">
+      </label>
+
+      <label>
+        <span>Last Name</span>
+        <input type="text" id="lastName" required placeholder="Surname">
+      </label>
+
+      <label>
+        <span>First Name</span>
+        <input type="text" id="firstName" required placeholder="First name">
+      </label>
+
+      <label>
+        <span>Other Names</span>
+        <input type="text" id="otherNames" placeholder="Other names">
+      </label>
+
+      <label>
+        <span>Phone</span>
+        <input type="text" id="phoneNumber" placeholder="080...">
+      </label>
+
+      <label>
+        <span>Class Arm</span>
+        <select id="classArm" required>
+          <option value="">Select class arm</option>
+          <option value="JSS1A">JSS1A</option>
+          <option value="JSS1B">JSS1B</option>
+          <option value="JSS1C">JSS1C</option>
+          <option value="JSS2A">JSS2A</option>
+          <option value="JSS2B">JSS2B</option>
+          <option value="JSS2C">JSS2C</option>
+          <option value="JSS3A">JSS3A</option>
+          <option value="JSS3B">JSS3B</option>
+          <option value="JSS3C">JSS3C</option>
+          <option value="SS1A">SS1A</option>
+          <option value="SS1B">SS1B</option>
+          <option value="SS1C">SS1C</option>
+          <option value="SS2A">SS2A</option>
+          <option value="SS2B">SS2B</option>
+          <option value="SS2C">SS2C</option>
+          <option value="SS3A">SS3A</option>
+          <option value="SS3B">SS3B</option>
+          <option value="SS3C">SS3C</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Class Category</span>
+        <select id="classCategory" required>
+          <option value="">Select category</option>
+          <option value="JSS1">JSS1</option>
+          <option value="JSS2">JSS2</option>
+          <option value="JSS3">JSS3</option>
+          <option value="SS1">SS1</option>
+          <option value="SS2">SS2</option>
+          <option value="SS3">SS3</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="studio-btn ghost" data-close-modal>
+        Cancel
+      </button>
+
+      <button type="submit" class="studio-btn primary" id="saveStudentBtn">
+        <i class="fa-solid fa-floppy-disk"></i>
+        Save Record
+      </button>
+    </div>
+  </form>
+</section>
+
+
+<section class="confirm-modal" id="confirmModal" aria-hidden="true">
+  <div class="confirm-icon">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+  </div>
+
+  <h2 id="confirmTitle">Delete Record?</h2>
+  <p id="confirmMessage">This action will update your CSV database.</p>
+
+  <div class="confirm-actions">
+    <button type="button" class="studio-btn ghost" id="cancelConfirmBtn">Cancel</button>
+    <button type="button" class="studio-btn danger" id="confirmActionBtn">Yes, Continue</button>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/student_list.js') }}"></script>
 {% endblock %}

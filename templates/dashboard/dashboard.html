@@ -2,17 +2,348 @@
 
 {% block title %}Dashboard — Staff Management Software{% endblock %}
 
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
 {% block content %}
 
-<div class="page-shell">
+<div class="dashboard-shell"
+     data-stats-url="{{ url_for('dashboard.dashboard_stats_api') }}">
 
-  <section class="page-card" style="padding: 30px;">
-    <h1>Staff Management Dashboard</h1>
-    <p>
-      Base layout, Volt-style sidebar, topbar, CSS, and JS are working.
-    </p>
+  <section class="dash-hero">
+    <div>
+      <div class="dash-breadcrumb">
+        <a href="{{ url_for('dashboard.dashboard') }}">Home</a>
+        <span>/</span>
+        <strong>Dashboard</strong>
+      </div>
+
+      <h1>Staff Management Dashboard</h1>
+      <p>
+        Live overview from your student CSV database across JSS1 to SS3.
+        Manage students, attendance, CA tests, reports, classes, staff and academic setup from one workspace.
+      </p>
+    </div>
+
+    <div class="dash-hero-actions">
+      <button type="button" class="dash-btn dash-btn-light" id="refreshDashboardBtn">
+        <i class="fa-solid fa-rotate"></i>
+        Refresh
+      </button>
+
+      <a href="{{ url_for('students.student_list') }}" class="dash-btn dash-btn-primary">
+        <i class="fa-solid fa-user-plus"></i>
+        Add Student
+      </a>
+    </div>
+  </section>
+
+
+  <section class="dash-summary-grid">
+
+    <article class="dash-summary-card">
+      <div class="summary-icon blue">
+        <i class="fa-solid fa-user-graduate"></i>
+      </div>
+      <div>
+        <span>Total Students</span>
+        <strong class="counter" id="totalStudentsCounter" data-count="{{ dashboard_stats.total_students }}">0</strong>
+      </div>
+    </article>
+
+    <article class="dash-summary-card">
+      <div class="summary-icon green">
+        <i class="fa-solid fa-layer-group"></i>
+      </div>
+      <div>
+        <span>Class Arms</span>
+        <strong class="counter" id="classArmsCounter" data-count="{{ dashboard_stats.total_class_arms }}">0</strong>
+      </div>
+    </article>
+
+    <article class="dash-summary-card">
+      <div class="summary-icon orange">
+        <i class="fa-solid fa-school"></i>
+      </div>
+      <div>
+        <span>Academic Levels</span>
+        <strong class="counter" id="levelsCounter" data-count="{{ dashboard_stats.total_levels }}">0</strong>
+      </div>
+    </article>
+
+    <article class="dash-summary-card">
+      <div class="summary-icon purple">
+        <i class="fa-solid fa-phone"></i>
+      </div>
+      <div>
+        <span>Contacts Available</span>
+        <strong class="counter" id="contactsCounter" data-count="{{ dashboard_stats.complete_phone_count }}">0</strong>
+      </div>
+    </article>
+
+  </section>
+
+
+  <section class="dashboard-grid">
+
+    <article class="dashboard-panel modules-panel">
+
+      <div class="panel-head">
+        <div>
+          <h2>Software Modules</h2>
+          <p>Quick access to all major pages in the system.</p>
+        </div>
+
+        <div class="module-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="search" id="moduleSearchInput" placeholder="Search modules...">
+        </div>
+      </div>
+
+      <div class="module-grid" id="moduleGrid">
+
+        <a href="{{ url_for('dashboard.dashboard') }}" class="module-tile">
+          <span class="module-icon blue"><i class="fa-solid fa-chart-pie"></i></span>
+          <strong>Dashboard</strong>
+          <small>System overview</small>
+        </a>
+
+        <a href="{{ url_for('students.student_list') }}" class="module-tile">
+          <span class="module-icon cyan"><i class="fa-solid fa-user-graduate"></i></span>
+          <strong>Students</strong>
+          <small>Student records</small>
+        </a>
+
+        <a href="{{ url_for('attendance.attendance_mark') }}" class="module-tile">
+          <span class="module-icon green"><i class="fa-solid fa-calendar-check"></i></span>
+          <strong>Attendance</strong>
+          <small>Daily register</small>
+        </a>
+
+        <a href="{{ url_for('ca_test.ca_entry') }}" class="module-tile">
+          <span class="module-icon orange"><i class="fa-solid fa-clipboard-list"></i></span>
+          <strong>CA Tests</strong>
+          <small>Score entries</small>
+        </a>
+
+        <a href="{{ url_for('reports.report_sheet') }}" class="module-tile">
+          <span class="module-icon purple"><i class="fa-solid fa-file-lines"></i></span>
+          <strong>Reports</strong>
+          <small>Print sheets</small>
+        </a>
+
+        <a href="{{ url_for('classes.classes_dashboard') }}" class="module-tile">
+          <span class="module-icon navy"><i class="fa-solid fa-layer-group"></i></span>
+          <strong>Classes</strong>
+          <small>Arms & levels</small>
+        </a>
+
+        <a href="{{ url_for('promotion.promotion_dashboard') }}" class="module-tile">
+          <span class="module-icon pink"><i class="fa-solid fa-arrow-up-right-dots"></i></span>
+          <strong>Promotion</strong>
+          <small>Move students</small>
+        </a>
+
+        <a href="{{ url_for('promotion.graduation') }}" class="module-tile">
+          <span class="module-icon yellow"><i class="fa-solid fa-graduation-cap"></i></span>
+          <strong>Graduation</strong>
+          <small>Final classes</small>
+        </a>
+
+        <a href="{{ url_for('promotion.withdraw_transfer') }}" class="module-tile">
+          <span class="module-icon red"><i class="fa-solid fa-right-left"></i></span>
+          <strong>Transfer</strong>
+          <small>Withdraw/move</small>
+        </a>
+
+        <a href="{{ url_for('staff.staff_list') }}" class="module-tile">
+          <span class="module-icon teal"><i class="fa-solid fa-chalkboard-user"></i></span>
+          <strong>Staff</strong>
+          <small>Staff records</small>
+        </a>
+
+        <a href="{{ url_for('settings.sessions_terms') }}" class="module-tile">
+          <span class="module-icon indigo"><i class="fa-solid fa-calendar-days"></i></span>
+          <strong>Sessions</strong>
+          <small>Terms setup</small>
+        </a>
+
+        <a href="{{ url_for('settings.subjects') }}" class="module-tile">
+          <span class="module-icon lime"><i class="fa-solid fa-book-open"></i></span>
+          <strong>Subjects</strong>
+          <small>Class subjects</small>
+        </a>
+
+        <a href="{{ url_for('settings.grading') }}" class="module-tile">
+          <span class="module-icon violet"><i class="fa-solid fa-ranking-star"></i></span>
+          <strong>Grading</strong>
+          <small>Result scale</small>
+        </a>
+
+        <a href="{{ url_for('settings.settings_general') }}" class="module-tile">
+          <span class="module-icon gray"><i class="fa-solid fa-gear"></i></span>
+          <strong>Settings</strong>
+          <small>System config</small>
+        </a>
+
+      </div>
+    </article>
+
+
+    <aside class="dashboard-panel activity-panel">
+
+      <div class="panel-head compact">
+        <div>
+          <h2>Student Database</h2>
+          <p>Live count by class category.</p>
+        </div>
+      </div>
+
+      <div class="activity-card active">
+        <span class="activity-badge">Live</span>
+        <h3>{{ dashboard_stats.total_students }} students loaded</h3>
+        <p>
+          Data is coming directly from the CSV files inside
+          <strong>static/data</strong>.
+        </p>
+        <a href="{{ url_for('students.student_list') }}">
+          View Students <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="mini-progress-list" id="classBreakdownList">
+        {% for item in dashboard_stats.class_breakdown %}
+          <div class="mini-progress-item">
+            <div>
+              <strong>{{ item.level }}</strong>
+              <span>{{ item.count }} students</span>
+            </div>
+            <div class="mini-bar">
+              <span style="width: {{ item.percent }}%;"></span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    </aside>
+
+  </section>
+
+
+  <section class="dashboard-lower-grid">
+
+    <article class="dashboard-panel roadmap-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Class Arms Breakdown</h2>
+          <p>Student population grouped by each class arm.</p>
+        </div>
+
+        <button type="button" class="small-action-btn">
+          <i class="fa-solid fa-database"></i>
+          CSV Data
+        </button>
+      </div>
+
+      <div class="roadmap-block blue-line">
+        <button type="button" class="roadmap-title">
+          <span>Junior Secondary School</span>
+          <i class="fa-solid fa-chevron-up"></i>
+        </button>
+
+        <div class="roadmap-table">
+          <div class="roadmap-row header">
+            <span>Class Arm</span>
+            <span>Students</span>
+            <span>Level</span>
+            <span>Population</span>
+          </div>
+
+          {% for item in dashboard_stats.arm_breakdown %}
+            {% if item.arm.startswith("JSS") %}
+            <div class="roadmap-row">
+              <span>{{ item.arm }}</span>
+              <span>{{ item.count }}</span>
+              <span>{{ item.arm[:4] }}</span>
+              <span><b class="progress-line"><i style="width: {{ item.percent }}%;"></i></b></span>
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="roadmap-block orange-line">
+        <button type="button" class="roadmap-title">
+          <span>Senior Secondary School</span>
+          <i class="fa-solid fa-chevron-up"></i>
+        </button>
+
+        <div class="roadmap-table">
+          <div class="roadmap-row header">
+            <span>Class Arm</span>
+            <span>Students</span>
+            <span>Level</span>
+            <span>Population</span>
+          </div>
+
+          {% for item in dashboard_stats.arm_breakdown %}
+            {% if item.arm.startswith("SS") %}
+            <div class="roadmap-row">
+              <span>{{ item.arm }}</span>
+              <span>{{ item.count }}</span>
+              <span>{{ item.arm[:3] }}</span>
+              <span><b class="progress-line orange"><i style="width: {{ item.percent }}%;"></i></b></span>
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </article>
+
+
+    <aside class="dashboard-panel meetings-panel">
+      <div class="panel-head compact">
+        <div>
+          <h2>Data Health</h2>
+          <p>Quick CSV database checks.</p>
+        </div>
+      </div>
+
+      <div class="task-card orange-card">
+        <span>Live</span>
+        <h3>{{ dashboard_stats.total_students }} total students</h3>
+        <p>All available student CSV files have been scanned.</p>
+        <a href="{{ url_for('students.student_list') }}">Open</a>
+      </div>
+
+      <div class="task-card light-card">
+        <span>{{ dashboard_stats.missing_phone_count }}</span>
+        <h3>Missing phone numbers</h3>
+        <p>Students without phone numbers in the CSV records.</p>
+        <a href="{{ url_for('students.student_list') }}">Review</a>
+      </div>
+
+      <div class="task-card light-card">
+        <span>{{ dashboard_stats.missing_files|length }}</span>
+        <h3>Missing CSV files</h3>
+        <p>
+          {% if dashboard_stats.missing_files %}
+            {{ dashboard_stats.missing_files|join(", ") }}
+          {% else %}
+            All expected student CSV files are available.
+          {% endif %}
+        </p>
+        <a href="{{ url_for('dashboard.dashboard') }}">Check</a>
+      </div>
+    </aside>
+
   </section>
 
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

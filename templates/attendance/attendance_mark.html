@@ -1,12 +1,363 @@
 {% extends "base.html" %}
 
-{% block title %}Page — Staff Management Software{% endblock %}
+{% block title %}Attendance — Staff Management Software{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/attendance_mark.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/mark_modal.css') }}">
+{% endblock %}
 
 {% block content %}
-<div class="page-shell">
-  <section class="page-card" style="padding: 30px;">
-    <h1>Page Connected</h1>
-    <p>This page is loading through base.html.</p>
+
+<div class="attendance-studio attendance-compact-register"
+     data-students-url="{{ url_for('attendance.attendance_students_api') }}"
+     data-save-url="{{ url_for('attendance.save_attendance_api') }}"
+     data-holiday-url="{{ url_for('attendance.mark_holiday_api') }}"
+     data-summary-url="{{ url_for('attendance.attendance_summary_api') }}">
+
+  <script id="classArmsData" type="application/json">
+    {{ class_arms|tojson }}
+  </script>
+
+  <div id="attendanceToastHost" class="attendance-toast-host"></div>
+
+  <section class="attendance-ribbon">
+    <div class="attendance-ribbon-left">
+      <div class="attendance-crumb">
+        <a href="{{ url_for('dashboard.dashboard') }}">
+          <i class="fa-solid fa-house"></i> Home
+        </a>
+        <span>/</span>
+        <strong>Attendance Studio</strong>
+      </div>
+
+      <div class="attendance-title-row">
+        <span class="title-icon">
+          <i class="fa-solid fa-clipboard-user"></i>
+        </span>
+
+        <div>
+          <span class="attendance-badge">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            Smart Daily Register
+          </span>
+
+          <h1>Attendance Marking Studio</h1>
+          <p>
+            Load JSS arms A-C or SS arms Gold/Silver/Diamond, mark students quickly,
+            save to CSV, track reasons and prepare data for reports.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="attendance-ribbon-right">
+      <div class="today-card">
+        <i class="fa-solid fa-calendar-day"></i>
+        <div>
+          <span id="todayDayLabel">{{ today_day }}</span>
+          <strong id="todayDateLabel">{{ today_label }}</strong>
+        </div>
+      </div>
+
+      <button type="button" class="attendance-top-btn" id="printRegisterBtn">
+        <i class="fa-solid fa-print"></i>
+        Print
+      </button>
+    </div>
   </section>
+
+  <section class="attendance-stats-grid">
+    <article class="attendance-stat-card present">
+      <span><i class="fa-solid fa-user-check"></i></span>
+      <div><small>Present</small><strong id="presentCount">0</strong></div>
+    </article>
+
+    <article class="attendance-stat-card absent">
+      <span><i class="fa-solid fa-user-xmark"></i></span>
+      <div><small>Absent</small><strong id="absentCount">0</strong></div>
+    </article>
+
+    <article class="attendance-stat-card late">
+      <span><i class="fa-solid fa-person-running"></i></span>
+      <div><small>Late</small><strong id="lateCount">0</strong></div>
+    </article>
+
+    <article class="attendance-stat-card sick">
+      <span><i class="fa-solid fa-kit-medical"></i></span>
+      <div><small>Sick</small><strong id="sickCount">0</strong></div>
+    </article>
+
+    <article class="attendance-stat-card pending">
+      <span><i class="fa-solid fa-hourglass-half"></i></span>
+      <div><small>Unmarked</small><strong id="pendingCount">0</strong></div>
+    </article>
+
+    <article class="attendance-stat-card total">
+      <span><i class="fa-solid fa-users"></i></span>
+      <div><small>Total</small><strong id="totalCount">0</strong></div>
+    </article>
+  </section>
+
+  <section class="attendance-control-dock">
+    <div class="control-field">
+      <label for="sessionSelect"><i class="fa-solid fa-calendar-days"></i> Session</label>
+      <select id="sessionSelect">
+        {% for session in sessions %}
+        <option value="{{ session }}" {% if session == active_session %}selected{% endif %}>
+          {{ session }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="control-field">
+      <label for="termSelect"><i class="fa-solid fa-book-open"></i> Term</label>
+      <select id="termSelect">
+        <option value="FIRST TERM" {% if active_term == "FIRST TERM" %}selected{% endif %}>First Term</option>
+        <option value="SECOND TERM" {% if active_term == "SECOND TERM" %}selected{% endif %}>Second Term</option>
+        <option value="THIRD TERM" {% if active_term == "THIRD TERM" %}selected{% endif %}>Third Term</option>
+      </select>
+    </div>
+
+    <div class="control-field">
+      <label for="levelSelect"><i class="fa-solid fa-school"></i> Class Level</label>
+      <select id="levelSelect">
+        <option value="">Select level</option>
+        {% for level in class_levels %}
+        <option value="{{ level }}">{{ level }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="control-field">
+      <label for="armSelect"><i class="fa-solid fa-layer-group"></i> Class Arm</label>
+      <select id="armSelect">
+        <option value="">Select arm</option>
+      </select>
+    </div>
+
+    <div class="control-field">
+      <label for="attendanceDate"><i class="fa-solid fa-calendar-day"></i> Date</label>
+      <input type="date" id="attendanceDate" value="{{ today_iso }}">
+    </div>
+
+    <div class="control-buttons">
+      <button type="button" class="attendance-btn primary" id="loadStudentsBtn">
+        <i class="fa-solid fa-cloud-arrow-down"></i>
+        Load Class
+      </button>
+
+      <button type="button" class="attendance-btn ghost" id="refreshAttendanceBtn" title="Refresh">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+    </div>
+  </section>
+
+  <section class="attendance-toolbelt">
+    <label class="attendance-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="search" id="attendanceSearchInput" placeholder="Search student name, admission no, status...">
+    </label>
+
+    <div class="attendance-filter-group">
+      <button type="button" class="filter-pill active" data-filter="ALL">
+        <i class="fa-solid fa-border-all"></i> All
+      </button>
+
+      <button type="button" class="filter-pill" data-filter="PRESENT">
+        <i class="fa-solid fa-user-check"></i> Present
+      </button>
+
+      <button type="button" class="filter-pill" data-filter="ABSENT">
+        <i class="fa-solid fa-user-xmark"></i> Absent
+      </button>
+
+      <button type="button" class="filter-pill" data-filter="UNMARKED">
+        <i class="fa-solid fa-clock"></i> Unmarked
+      </button>
+    </div>
+
+    <div class="quick-actions">
+      <button type="button" class="quick-btn success" id="markAllPresentBtn">
+        <i class="fa-solid fa-circle-check"></i> All Present
+      </button>
+
+      <button type="button" class="quick-btn danger" id="markAllAbsentBtn">
+        <i class="fa-solid fa-circle-xmark"></i> All Absent
+      </button>
+
+      <button type="button" class="quick-btn late" id="markSelectedLateBtn">
+        <i class="fa-solid fa-person-running"></i> Selected Late
+      </button>
+
+      <button type="button" class="quick-btn sick" id="markSelectedSickBtn">
+        <i class="fa-solid fa-kit-medical"></i> Selected Sick
+      </button>
+
+      <button type="button" class="quick-btn warning" id="markHolidayBtn">
+        <i class="fa-solid fa-umbrella-beach"></i> Holiday
+      </button>
+
+      <button type="button" class="quick-btn dark" id="clearMarksBtn">
+        <i class="fa-solid fa-eraser"></i> Clear
+      </button>
+    </div>
+  </section>
+
+  <section class="attendance-register-card compact-register-card">
+    <div class="register-head">
+      <div>
+        <span class="register-kicker">
+          <i class="fa-solid fa-table-list"></i>
+          Live Class Register
+        </span>
+
+        <h2 id="registerTitle">Select class and load students</h2>
+        <p id="registerSubtitle">JSS uses A-C arms. SS uses Gold, Silver and Diamond arms.</p>
+      </div>
+
+      <div class="register-save-box">
+        <label class="overwrite-toggle">
+          <input type="checkbox" id="overwriteExisting">
+          <span>Overwrite existing date record</span>
+        </label>
+
+        <button type="button" class="attendance-btn save" id="saveAttendanceBtn" disabled>
+          <i class="fa-solid fa-floppy-disk"></i>
+          Save Attendance
+        </button>
+      </div>
+    </div>
+
+    <div class="session-chip-row">
+      <span><i class="fa-solid fa-calendar"></i> Session: <strong id="chipSession">{{ active_session }}</strong></span>
+      <span><i class="fa-solid fa-book-open-reader"></i> Term: <strong id="chipTerm">{{ active_term }}</strong></span>
+      <span><i class="fa-solid fa-users-viewfinder"></i> Selected: <strong id="selectedCount">0</strong></span>
+      <span><i class="fa-solid fa-business-time"></i> Saved: <strong id="chipTimestamp">Not saved</strong></span>
+    </div>
+
+    <div class="attendance-table-wrap compact-table-wrap">
+      <table class="attendance-table compact-attendance-table" id="attendanceTable">
+        <thead>
+          <tr>
+            <th>
+              <input type="checkbox" id="selectAllStudents" title="Select all students">
+            </th>
+            <th>S/N</th>
+            <th>Student</th>
+            <th>Admission No.</th>
+            <th>Class</th>
+            <th>Status</th>
+            <th>Reason</th>
+            <th>Note</th>
+            <th>Mark</th>
+          </tr>
+        </thead>
+
+        <tbody id="attendanceTableBody">
+          <tr class="empty-row">
+            <td colspan="9">
+              <div class="attendance-empty-state">
+                <i class="fa-solid fa-calendar-check"></i>
+                <h3>No class loaded yet</h3>
+                <p>Select session, term, class level and class arm, then click Load Class.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="attendance-insight-panel">
+    <article>
+      <i class="fa-solid fa-file-csv"></i>
+      <div>
+        <strong>CSV Storage</strong>
+        <span>Attendance saves into static/data/attendance/attendance_[class].csv</span>
+      </div>
+    </article>
+
+    <article>
+      <i class="fa-solid fa-gauge-high"></i>
+      <div>
+        <strong>Live Counters</strong>
+        <span>Present, absent, late, sick and unmarked totals update instantly.</span>
+      </div>
+    </article>
+
+    <article>
+      <i class="fa-solid fa-filter-circle-dollar"></i>
+      <div>
+        <strong>Smart Filters</strong>
+        <span>Filter by status while searching names, admissions and notes.</span>
+      </div>
+    </article>
+
+    <article>
+      <i class="fa-solid fa-ban"></i>
+      <div>
+        <strong>Holiday Mode</strong>
+        <span>Save school closure days without counting pupils absent.</span>
+      </div>
+    </article>
+  </section>
+
 </div>
+
+<section class="attendance-confirm-modal" id="holidayConfirmModal" aria-hidden="true">
+  <div class="confirm-icon">
+    <i class="fa-solid fa-umbrella-beach"></i>
+  </div>
+
+  <h2>Mark as School Holiday?</h2>
+  <p>
+    This will save the selected class and date as school not in session.
+    No student will be counted present or absent.
+  </p>
+
+  <div class="holiday-reason-box">
+    <label for="holidayReason">Reason</label>
+    <input type="text" id="holidayReason" placeholder="Public holiday, mid-term break, emergency closure...">
+  </div>
+
+  <div class="confirm-actions">
+    <button type="button" class="attendance-btn ghost" id="cancelHolidayBtn">Cancel</button>
+
+    <button type="button" class="attendance-btn warning" id="confirmHolidayBtn">
+      <i class="fa-solid fa-check"></i>
+      Confirm Holiday
+    </button>
+  </div>
+</section>
+
+<section class="attendance-student-modal" id="attendanceStudentModal" aria-hidden="true">
+  <button type="button" class="attendance-modal-close" id="closeStudentModal">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+
+  <div class="student-modal-head">
+    <span id="modalStudentAvatar">ST</span>
+    <div>
+      <small>Attendance Profile</small>
+      <h2 id="modalStudentName">Student Name</h2>
+      <p id="modalStudentAdmission">Admission Number</p>
+    </div>
+  </div>
+
+  <div class="student-modal-grid">
+    <div><span>Class Arm</span><strong id="modalStudentClass">—</strong></div>
+    <div><span>Status</span><strong id="modalStudentStatus">—</strong></div>
+    <div><span>Reason</span><strong id="modalStudentReason">—</strong></div>
+    <div><span>Note</span><strong id="modalStudentNote">—</strong></div>
+  </div>
+</section>
+
+<div class="attendance-modal-backdrop" id="attendanceModalBackdrop"></div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/attendance_mark.js') }}"></script>
 {% endblock %}
