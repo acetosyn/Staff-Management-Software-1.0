@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Management Software{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/staff_dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="staff-page">
+
+  <section class="staff-hero">
+    <div>
+      <span class="staff-kicker">Epitome EMIS</span>
+      <h1>Staff Management Dashboard</h1>
+      <p>
+        Manage students, attendance, CA tests, report sheets, promotions,
+        graduations, withdrawals, transfers, and school records.
+      </p>
+    </div>
+
+    <div class="staff-hero-actions">
+      <a href="{{ url_for('students.student_list') }}" class="btn btn-primary">
+        Manage Students
+      </a>
+
+      <a href="{{ url_for('attendance.attendance_mark') }}" class="btn btn-secondary">
+        Mark Attendance
+      </a>
+    </div>
+  </section>
+
+
+  <section class="staff-stats-grid">
+
+    <article class="staff-stat-card">
+      <span>Total Students</span>
+      <strong>0</strong>
+      <small>All registered students</small>
+    </article>
+
+    <article class="staff-stat-card">
+      <span>Classes</span>
+      <strong>6</strong>
+      <small>JSS1 to SS3</small>
+    </article>
+
+    <article class="staff-stat-card">
+      <span>Class Arms</span>
+      <strong>21</strong>
+      <small>All active arms</small>
+    </article>
+
+    <article class="staff-stat-card">
+      <span>Today Attendance</span>
+      <strong>0</strong>
+      <small>Marked today</small>
+    </article>
+
+  </section>
+
+
+  <section class="staff-module-grid">
+
+    <a href="{{ url_for('students.student_list') }}" class="staff-module-card">
+      <h3>Students</h3>
+      <p>Register, view, edit, and manage student records.</p>
+    </a>
+
+    <a href="{{ url_for('attendance.attendance_mark') }}" class="staff-module-card">
+      <h3>Daily Attendance</h3>
+      <p>Mark daily attendance by class, arm, term, and session.</p>
+    </a>
+
+    <a href="{{ url_for('ca_tests.ca_entry') }}" class="staff-module-card">
+      <h3>CA Tests</h3>
+      <p>Enter CA scores and auto-compute subject performance.</p>
+    </a>
+
+    <a href="{{ url_for('reports.report_sheet') }}" class="staff-module-card">
+      <h3>Report Sheets</h3>
+      <p>Generate detailed report sheets for JSS1 to SS3.</p>
+    </a>
+
+    <a href="{{ url_for('promotion.promotion_dashboard') }}" class="staff-module-card">
+      <h3>Promotion</h3>
+      <p>Promote, graduate, withdraw, or transfer students.</p>
+    </a>
+
+    <a href="{{ url_for('settings.settings_general') }}" class="staff-module-card">
+      <h3>Settings</h3>
+      <p>Manage school setup, classes, terms, and sessions.</p>
+    </a>
+
+  </section>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/staff_dashboard.js') }}"></script>
+{% endblock %}
