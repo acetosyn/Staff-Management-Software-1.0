@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", function () {
   initSidebarDropdowns();
   initActiveSubmenus();
   initFlashMessages();
+if (typeof initSMSFlashSystem === "function") {
+  initSMSFlashSystem();
+}
   initLiveClock();
   initFooterYear();
   initThemeToggle();
@@ -423,6 +426,274 @@ function initFlashMessages() {
     });
   });
 }
+
+
+/* ============================================================
+   GLOBAL MODERN FLASH / TOAST SYSTEM
+   Usage:
+   window.smsFlash("Scores saved successfully", "success");
+   window.smsFlash("Something went wrong", "error");
+   window.smsFlash("Loading students...", "info");
+   window.smsFlash("Check this record", "warning");
+============================================================ */
+
+function initGlobalFlashSystem() {
+  injectGlobalFlashStyles();
+
+  if (!document.getElementById("smsFlashHost")) {
+    const host = document.createElement("div");
+    host.id = "smsFlashHost";
+    host.className = "sms-flash-host";
+    document.body.appendChild(host);
+  }
+
+  window.smsFlash = function (message, type = "success", options = {}) {
+    const host = document.getElementById("smsFlashHost");
+    if (!host) return;
+
+    const duration = options.duration || 4200;
+
+    const icons = {
+      success: "fa-circle-check",
+      error: "fa-triangle-exclamation",
+      warning: "fa-circle-exclamation",
+      info: "fa-circle-info",
+      loading: "fa-spinner fa-spin"
+    };
+
+    const titles = {
+      success: "Success",
+      error: "Action Failed",
+      warning: "Attention",
+      info: "Notice",
+      loading: "Processing"
+    };
+
+    const toast = document.createElement("div");
+    toast.className = `sms-flash-toast ${type}`;
+    toast.innerHTML = `
+      <div class="sms-flash-icon">
+        <i class="fa-solid ${icons[type] || icons.info}"></i>
+      </div>
+
+      <div class="sms-flash-content">
+        <strong>${titles[type] || titles.info}</strong>
+        <span>${message}</span>
+      </div>
+
+      <button type="button" class="sms-flash-close" aria-label="Close notification">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="sms-flash-progress"></div>
+    `;
+
+    host.appendChild(toast);
+
+    requestAnimationFrame(() => {
+      toast.classList.add("show");
+    });
+
+    const closeToast = () => {
+      toast.classList.remove("show");
+      toast.classList.add("hide");
+
+      setTimeout(() => {
+        toast.remove();
+      }, 260);
+    };
+
+    toast.querySelector(".sms-flash-close")?.addEventListener("click", closeToast);
+
+    if (type !== "loading") {
+      setTimeout(closeToast, duration);
+    }
+
+    return {
+      close: closeToast,
+      update(newMessage, newType = type) {
+        toast.className = `sms-flash-toast ${newType} show`;
+        toast.querySelector(".sms-flash-content span").textContent = newMessage;
+      }
+    };
+  };
+}
+
+
+function injectGlobalFlashStyles() {
+  if (document.getElementById("smsGlobalFlashStyles")) return;
+
+  const style = document.createElement("style");
+  style.id = "smsGlobalFlashStyles";
+  style.textContent = `
+    .sms-flash-host {
+      position: fixed;
+      top: 92px;
+      right: 26px;
+      z-index: 99999;
+      width: min(420px, calc(100vw - 32px));
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .sms-flash-toast {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 14px 16px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(15, 23, 42, 0.10);
+      box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+      backdrop-filter: blur(18px);
+      opacity: 0;
+      transform: translateX(22px) scale(0.96);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      pointer-events: auto;
+    }
+
+    .sms-flash-toast.show {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+
+    .sms-flash-toast.hide {
+      opacity: 0;
+      transform: translateX(22px) scale(0.96);
+    }
+
+    .sms-flash-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      color: #ffffff;
+      font-size: 1.1rem;
+    }
+
+    .sms-flash-toast.success .sms-flash-icon {
+      background: linear-gradient(135deg, #16a34a, #0f766e);
+    }
+
+    .sms-flash-toast.error .sms-flash-icon {
+      background: linear-gradient(135deg, #e11d48, #be123c);
+    }
+
+    .sms-flash-toast.warning .sms-flash-icon {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .sms-flash-toast.info .sms-flash-icon,
+    .sms-flash-toast.loading .sms-flash-icon {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    }
+
+    .sms-flash-content strong {
+      display: block;
+      color: #0f172a;
+      font-size: 0.92rem;
+      font-weight: 1000;
+      line-height: 1.15;
+    }
+
+    .sms-flash-content span {
+      display: block;
+      margin-top: 3px;
+      color: #64748b;
+      font-size: 0.84rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .sms-flash-close {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.06);
+      color: #334155;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .sms-flash-close:hover {
+      background: #111827;
+      color: #ffffff;
+    }
+
+    .sms-flash-progress {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 4px;
+      width: 100%;
+      transform-origin: left;
+      animation: smsFlashProgress 4.2s linear forwards;
+    }
+
+    .sms-flash-toast.success .sms-flash-progress {
+      background: #16a34a;
+    }
+
+    .sms-flash-toast.error .sms-flash-progress {
+      background: #e11d48;
+    }
+
+    .sms-flash-toast.warning .sms-flash-progress {
+      background: #f59e0b;
+    }
+
+    .sms-flash-toast.info .sms-flash-progress,
+    .sms-flash-toast.loading .sms-flash-progress {
+      background: #0ea5e9;
+    }
+
+    .sms-flash-toast.loading .sms-flash-progress {
+      animation: none;
+    }
+
+    @keyframes smsFlashProgress {
+      from { transform: scaleX(1); }
+      to { transform: scaleX(0); }
+    }
+
+    body.dark-mode .sms-flash-toast {
+      background: rgba(28, 33, 53, 0.96);
+      border-color: rgba(255, 255, 255, 0.10);
+    }
+
+    body.dark-mode .sms-flash-content strong {
+      color: #ffffff;
+    }
+
+    body.dark-mode .sms-flash-content span {
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    @media (max-width: 700px) {
+      .sms-flash-host {
+        top: 76px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+
+
+
 
 
 /* ============================================================
