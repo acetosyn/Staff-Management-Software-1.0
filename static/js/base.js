@@ -314,27 +314,145 @@ function initSidebarMobile() {
    DESKTOP SIDEBAR COLLAPSE
 ============================================================ */
 
+/* ============================================================
+   DESKTOP SIDEBAR COLLAPSE + AUTO EXPAND/COLLAPSE
+============================================================ */
+
 function initSidebarCollapse() {
+  const sidebar = document.getElementById("smsSidebar");
   const collapseBtn = document.getElementById("sidebarCollapseBtn");
 
-  if (!collapseBtn) return;
+  if (!sidebar || !collapseBtn) return;
+
+  const AUTO_COLLAPSE_DELAY = 60 * 1000; // 1 minute
+  let autoCollapseTimer = null;
+  let sidebarHovered = false;
+
+  function isDesktop() {
+    return window.innerWidth > 900;
+  }
+
+  function collapseSidebar(saveState = true) {
+    if (!isDesktop()) return;
+
+    document.body.classList.add("sidebar-collapsed");
+
+    if (saveState) {
+      localStorage.setItem("smsSidebarCollapsed", "true");
+    }
+
+    closeAllSidebarSubmenus();
+  }
+
+  function expandSidebar(saveState = true) {
+    if (!isDesktop()) return;
+
+    document.body.classList.remove("sidebar-collapsed");
+
+    if (saveState) {
+      localStorage.setItem("smsSidebarCollapsed", "false");
+    }
+
+    startAutoCollapseTimer();
+  }
+
+  function clearAutoCollapseTimer() {
+    if (autoCollapseTimer) {
+      clearTimeout(autoCollapseTimer);
+      autoCollapseTimer = null;
+    }
+  }
+
+  function startAutoCollapseTimer() {
+    clearAutoCollapseTimer();
+
+    if (!isDesktop()) return;
+    if (document.body.classList.contains("sidebar-collapsed")) return;
+    if (sidebarHovered) return;
+
+    autoCollapseTimer = setTimeout(function () {
+      if (!sidebarHovered) {
+        collapseSidebar(true);
+      }
+    }, AUTO_COLLAPSE_DELAY);
+  }
+
+  function closeAllSidebarSubmenus() {
+    document.querySelectorAll(".sidebar-item.has-submenu").forEach(function (item) {
+      item.classList.remove("open");
+    });
+  }
 
   const savedState = localStorage.getItem("smsSidebarCollapsed");
 
-  if (savedState === "true" && window.innerWidth > 900) {
-    document.body.classList.add("sidebar-collapsed");
+  if (isDesktop()) {
+    if (savedState === "false") {
+      expandSidebar(false);
+    } else {
+      collapseSidebar(false);
+    }
   }
 
   collapseBtn.addEventListener("click", function () {
-    if (window.innerWidth <= 900) return;
-
-    document.body.classList.toggle("sidebar-collapsed");
+    if (!isDesktop()) return;
 
     const isCollapsed = document.body.classList.contains("sidebar-collapsed");
-    localStorage.setItem("smsSidebarCollapsed", String(isCollapsed));
+
+    if (isCollapsed) {
+      expandSidebar(true);
+    } else {
+      collapseSidebar(true);
+    }
+  });
+
+  sidebar.addEventListener("mouseenter", function () {
+    if (!isDesktop()) return;
+
+    sidebarHovered = true;
+    clearAutoCollapseTimer();
+
+    if (document.body.classList.contains("sidebar-collapsed")) {
+      expandSidebar(false);
+    }
+  });
+
+  sidebar.addEventListener("mouseleave", function () {
+    if (!isDesktop()) return;
+
+    sidebarHovered = false;
+    startAutoCollapseTimer();
+  });
+
+  document.addEventListener("mousemove", function (event) {
+    if (!isDesktop()) return;
+
+    const isCollapsed = document.body.classList.contains("sidebar-collapsed");
+
+    if (!isCollapsed) return;
+
+    if (event.clientX <= 95) {
+      sidebarHovered = true;
+      expandSidebar(false);
+    }
+  });
+
+  window.addEventListener("resize", function () {
+    clearAutoCollapseTimer();
+
+    if (!isDesktop()) {
+      document.body.classList.remove("sidebar-collapsed");
+      return;
+    }
+
+    const currentSavedState = localStorage.getItem("smsSidebarCollapsed");
+
+    if (currentSavedState === "false") {
+      expandSidebar(false);
+    } else {
+      collapseSidebar(false);
+    }
   });
 }
-
 
 /* ============================================================
    SIDEBAR DROPDOWNS
