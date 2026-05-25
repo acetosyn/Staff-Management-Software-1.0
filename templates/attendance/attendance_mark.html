@@ -15,6 +15,7 @@
      data-holiday-url="{{ url_for('attendance.mark_holiday_api') }}"
      data-summary-url="{{ url_for('attendance.attendance_summary_api') }}"
      data-history-url="{{ url_for('attendance.attendance_history_api') }}"
+     data-delete-url="{{ url_for('attendance.delete_attendance_api') }}"
      data-student-history-url="{{ url_for('attendance.student_attendance_history_api') }}"
      data-report-attendance-url="{{ url_for('attendance.report_attendance_api') }}"
      data-dates-url="{{ url_for('attendance.attendance_dates_api') }}">
@@ -292,7 +293,7 @@
           <span>Overwrite existing date record</span>
         </label>
 
-   <button type="button" class="attendance-btn info" id="viewSummaryBtn">
+<button type="button" class="attendance-btn info" id="viewSummaryBtn">
   <i class="fa-solid fa-chart-pie"></i>
   Summary
 </button>
@@ -300,6 +301,11 @@
 <button type="button" class="attendance-btn history" id="viewCurrentClassHistoryBtn">
   <i class="fa-solid fa-table"></i>
   History
+</button>
+
+<button type="button" class="attendance-btn danger" id="deleteCurrentAttendanceBtn" disabled>
+  <i class="fa-solid fa-trash"></i>
+  Delete Attendance
 </button>
 
 <button type="button" class="attendance-btn save" id="saveAttendanceBtn" disabled>
@@ -693,7 +699,7 @@
             <th>Absent</th>
             <th>Late</th>
             <th>Sick</th>
-            <th>Action</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody id="historyDatesBody">
