@@ -1325,3 +1325,255 @@ body.dark-mode .quick-shortcut {
     padding: 0 12px 16px;
   }
 }
+
+
+
+
+/* ============================================================
+   ORBIT LOGO + MODERN SIDEBAR TOGGLE UPGRADE
+============================================================ */
+
+.orbit-brand-icon {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(0, 199, 247, 0.28), transparent 38%),
+    linear-gradient(145deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02));
+  border: 1px solid rgba(0, 199, 247, 0.32);
+  box-shadow:
+    0 0 0 6px rgba(0, 199, 247, 0.06),
+    0 14px 30px rgba(0, 0, 0, 0.22),
+    inset 0 0 18px rgba(255, 255, 255, 0.10);
+  overflow: visible;
+}
+
+.brand-orbit-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  display: block;
+  filter:
+    drop-shadow(0 0 8px rgba(0, 199, 247, 0.55))
+    drop-shadow(0 0 14px rgba(255, 95, 109, 0.22));
+  animation: orbitLogoFloat 4.5s ease-in-out infinite;
+}
+
+.brand-link:hover .brand-orbit-logo {
+  transform: scale(1.08) rotate(-8deg);
+}
+
+@keyframes orbitLogoFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-2px) rotate(5deg);
+  }
+}
+
+body.sidebar-collapsed .orbit-brand-icon {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+}
+
+body.sidebar-collapsed .brand-orbit-logo {
+  width: 44px;
+  height: 44px;
+}
+
+.system-orbit-logo {
+  width: 39px;
+  height: 39px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 199, 247, 0.22));
+}
+
+/* ============================================================
+   PREMIUM MODERN SIDEBAR TOGGLE BUTTON (UPGRADED HOVER)
+============================================================ */
+
+.modern-collapse-btn,
+.modern-menu-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, #0ea5e9 0%, #22c55e 45%, #8b5cf6 100%);
+  color: #ffffff;
+  overflow: hidden;
+  box-shadow:
+    0 14px 28px rgba(14, 165, 233, 0.22),
+    0 8px 16px rgba(15, 23, 42, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 0.35s ease;
+}
+
+/* Inner glass layer */
+.modern-collapse-btn::before,
+.modern-menu-btn::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.35), transparent 30%),
+    linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.02));
+  pointer-events: none;
+}
+
+/* Colored glow sweep (NOT white anymore) */
+.modern-collapse-btn::after,
+.modern-menu-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      120deg,
+      transparent 20%,
+      rgba(0, 199, 247, 0.35),
+      rgba(124, 58, 237, 0.35),
+      transparent 80%
+    );
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: all 0.5s ease;
+}
+
+/* Hover state */
+.modern-collapse-btn:hover,
+.modern-menu-btn:hover {
+  background:
+    linear-gradient(135deg, #0284c7 0%, #16a34a 45%, #7c3aed 100%);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow:
+    0 20px 40px rgba(14, 165, 233, 0.35),
+    0 10px 24px rgba(124, 58, 237, 0.22),
+    0 0 0 6px rgba(0, 199, 247, 0.12);
+}
+
+.modern-collapse-btn:hover::after,
+.modern-menu-btn:hover::after {
+  opacity: 1;
+  transform: translateX(100%);
+}
+
+.modern-collapse-btn:active,
+.modern-menu-btn:active {
+  transform: translateY(-1px) scale(0.96);
+}
+
+/* ============================================================
+   ICON (DESKTOP)
+============================================================ */
+
+.collapse-orbit {
+  position: relative;
+  z-index: 2;
+  width: 25px;
+  height: 19px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.collapse-core,
+.collapse-ring {
+  height: 3px;
+  border-radius: 999px;
+  background: #ffffff;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+}
+
+.collapse-core { width: 25px; }
+.collapse-ring-one { width: 17px; }
+.collapse-ring-two { width: 22px; }
+
+/* Hover animation */
+.modern-collapse-btn:hover .collapse-core {
+  width: 18px;
+  transform: translateX(7px);
+}
+
+.modern-collapse-btn:hover .collapse-ring-one {
+  width: 25px;
+}
+
+.modern-collapse-btn:hover .collapse-ring-two {
+  width: 15px;
+  transform: translateX(10px);
+}
+
+/* ============================================================
+   ICON (MOBILE)
+============================================================ */
+
+.modern-toggle-lines {
+  position: relative;
+  z-index: 2;
+  width: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.modern-toggle-lines span {
+  height: 3px;
+  border-radius: 999px;
+  background: #ffffff;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+}
+
+.modern-toggle-lines span:nth-child(1) { width: 16px; }
+.modern-toggle-lines span:nth-child(2) { width: 25px; }
+.modern-toggle-lines span:nth-child(3) { width: 20px; }
+
+.modern-menu-btn:hover .modern-toggle-lines span:nth-child(1) {
+  width: 25px;
+}
+
+.modern-menu-btn:hover .modern-toggle-lines span:nth-child(2) {
+  width: 18px;
+  transform: translateX(7px);
+}
+
+.modern-menu-btn:hover .modern-toggle-lines span:nth-child(3) {
+  width: 25px;
+}
+
+/* ============================================================
+   COLLAPSED STATE
+============================================================ */
+
+body.sidebar-collapsed .modern-collapse-btn {
+  background:
+    linear-gradient(135deg, #7c3aed 0%, #0ea5e9 50%, #22c55e 100%);
+}
+
+body.sidebar-collapsed .collapse-core {
+  width: 16px;
+  transform: translateX(9px);
+}
+
+/* ============================================================
+   DARK MODE
+============================================================ */
+
+body.dark-mode .modern-collapse-btn,
+body.dark-mode .modern-menu-btn {
+  background:
+    linear-gradient(135deg, #0369a1 0%, #15803d 45%, #6d28d9 100%);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255,255,255,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+}
