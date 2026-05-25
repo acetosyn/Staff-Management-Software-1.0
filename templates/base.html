@@ -105,8 +105,12 @@
 
       <div class="sidebar-brand">
         <a href="{{ url_for('dashboard.dashboard') }}" class="brand-link">
-          <span class="brand-icon">
-            <i class="fa-solid fa-school"></i>
+          <span class="brand-icon orbit-brand-icon">
+            <img
+              src="{{ url_for('static', filename='images/orbit.png') }}"
+              alt="Epitome EMIS Orbit Logo"
+              class="brand-orbit-logo"
+            >
           </span>
 
           <span class="brand-text">Admin</span>
@@ -258,12 +262,20 @@
 
         <div class="topbar-left">
 
-          <button id="sidebarOpenBtn" class="topbar-icon-btn mobile-menu-btn" type="button" aria-label="Open sidebar">
-            <i class="fa-solid fa-bars"></i>
+          <button id="sidebarOpenBtn" class="topbar-icon-btn mobile-menu-btn modern-menu-btn" type="button" aria-label="Open sidebar">
+            <span class="modern-toggle-lines">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
           </button>
 
-          <button id="sidebarCollapseBtn" class="topbar-icon-btn desktop-collapse-btn" type="button" aria-label="Collapse sidebar">
-            <i class="fa-solid fa-bars-staggered"></i>
+          <button id="sidebarCollapseBtn" class="topbar-icon-btn desktop-collapse-btn modern-collapse-btn" type="button" aria-label="Collapse sidebar">
+            <span class="collapse-orbit">
+              <span class="collapse-core"></span>
+              <span class="collapse-ring collapse-ring-one"></span>
+              <span class="collapse-ring collapse-ring-two"></span>
+            </span>
           </button>
 
           <form class="topbar-search" action="#" method="get">
@@ -345,7 +357,11 @@
 
         <div class="system-header-left compact-system-title">
           <span class="system-logo compact-system-logo">
-            <i class="fa-solid fa-building-columns"></i>
+            <img
+              src="{{ url_for('static', filename='images/orbit.png') }}"
+              alt="Epitome EMIS"
+              class="system-orbit-logo"
+            >
           </span>
 
           <div>
