@@ -1525,3 +1525,704 @@ body.dark-mode .attendance-table td {
   transform: translateY(-1px);
   box-shadow: 0 10px 20px rgba(14, 165, 233, 0.25);
 }
+
+
+
+
+
+/* ================= MODAL ACTION BUTTON FIX ================= */
+
+.attendance-history-modal .attendance-btn,
+.attendance-modal .attendance-btn {
+  background: #111827 !important;
+  color: #ffffff !important;
+  border: none;
+}
+
+/* Specific styles */
+.attendance-history-modal .attendance-btn.export,
+.attendance-modal .attendance-btn.export {
+  background: linear-gradient(135deg, #10b981, #22c55e) !important;
+  color: #fff !important;
+}
+
+.attendance-history-modal .attendance-btn.print,
+.attendance-modal .attendance-btn.print {
+  background: linear-gradient(135deg, #2563eb, #38bdf8) !important;
+  color: #fff !important;
+}
+
+/* Hover */
+.attendance-history-modal .attendance-btn:hover,
+.attendance-modal .attendance-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+}
+
+
+
+
+
+/* ================= LIGHTER ATTENDANCE HISTORY MODAL ================= */
+
+.attendance-history-modal {
+  width: min(1380px, calc(100vw - 48px));
+  max-height: 92vh;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at 88% 6%, rgba(14, 165, 233, 0.13), transparent 26%),
+    radial-gradient(circle at 8% 8%, rgba(16, 185, 129, 0.10), transparent 24%),
+    #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  color: #111827;
+}
+
+.history-modal-head {
+  border-bottom: 1px solid rgba(203, 213, 225, 0.9);
+}
+
+.history-filter-grid {
+  background: #f8fafc;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  box-shadow: none;
+}
+
+.history-filter-grid .control-field label {
+  color: #334155;
+}
+
+.history-filter-grid .control-field select,
+.history-filter-grid .control-field input {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid rgba(203, 213, 225, 0.95);
+}
+
+.history-filter-grid .control-field input::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
+.history-summary-grid article {
+  background: #f8fafc;
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  box-shadow: none;
+}
+
+.history-tabs {
+  background: transparent;
+}
+
+.history-tab {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.history-tab.active {
+  background: #111827;
+  color: #ffffff;
+}
+
+.history-table-wrap {
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  border-radius: 18px;
+}
+
+.history-table thead th {
+  background: #111827;
+  color: #ffffff;
+}
+
+.history-table tbody td {
+  background: #ffffff;
+  color: #1f2937;
+}
+
+.history-table tbody tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.history-date-actions {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.row-action-btn.danger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.row-action-btn.danger:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.history-head-actions .attendance-btn {
+  background: #111827 !important;
+  color: #ffffff !important;
+}
+
+.history-head-actions .attendance-btn.save {
+  background: linear-gradient(135deg, #10b981, #22c55e) !important;
+}
+
+
+
+
+
+
+/* ============================================================
+   HISTORY MODAL COLOR REFRESH — LIGHTER, CLEARER, LESS NAVY
+============================================================ */
+
+.attendance-history-modal {
+  background:
+    radial-gradient(circle at 90% 5%, rgba(20, 184, 166, 0.16), transparent 26%),
+    radial-gradient(circle at 8% 8%, rgba(59, 130, 246, 0.12), transparent 24%),
+    linear-gradient(135deg, #ffffff 0%, #f8fcff 48%, #f0fdf4 100%) !important;
+}
+
+/* Header area */
+.history-modal-head {
+  background: transparent !important;
+}
+
+.history-modal-head h2 {
+  color: #0f172a !important;
+}
+
+.history-modal-head p {
+  color: #475569 !important;
+}
+
+/* Main filter box: remove heavy navy */
+.history-filter-grid {
+  background:
+    linear-gradient(135deg, #ecfeff 0%, #f0fdf4 45%, #fff7ed 100%) !important;
+  border: 1px solid #bae6fd !important;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Make Session, Term, Class Level, Class Arm headers clear */
+.history-filter-grid .control-field label {
+  color: #0f766e !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.07em !important;
+}
+
+.history-filter-grid .control-field label i {
+  color: #0284c7 !important;
+}
+
+/* Inputs/selects cleaner */
+.history-filter-grid .control-field select,
+.history-filter-grid .control-field input {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04) !important;
+}
+
+.history-filter-grid .control-field select:focus,
+.history-filter-grid .control-field input:focus {
+  border-color: #14b8a6 !important;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.14) !important;
+}
+
+/* Load/reset buttons inside filter */
+#loadHistoryBtn {
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6) !important;
+  color: #ffffff !important;
+}
+
+#resetHistoryBtn {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* Summary cards */
+.history-summary-grid article {
+  background: #ffffff !important;
+  border: 1px solid #dbeafe !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05) !important;
+}
+
+.history-summary-grid article:nth-child(1) { border-color: #bfdbfe !important; }
+.history-summary-grid article:nth-child(2) { border-color: #99f6e4 !important; }
+.history-summary-grid article:nth-child(3) { border-color: #bbf7d0 !important; }
+.history-summary-grid article:nth-child(4) { border-color: #fecaca !important; }
+.history-summary-grid article:nth-child(5) { border-color: #fed7aa !important; }
+.history-summary-grid article:nth-child(6) { border-color: #e9d5ff !important; }
+.history-summary-grid article:nth-child(7) { border-color: #ccfbf1 !important; }
+.history-summary-grid article:nth-child(8) { border-color: #fde68a !important; }
+
+/* Tabs less dark */
+.history-tab {
+  background: #eef6ff !important;
+  color: #334155 !important;
+}
+
+.history-tab.active {
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6) !important;
+  color: #ffffff !important;
+}
+
+/* Table header less navy */
+.history-table thead th {
+  background: linear-gradient(135deg, #0f766e, #0284c7) !important;
+  color: #ffffff !important;
+}
+
+/* Top action buttons */
+.history-head-actions .attendance-btn.print {
+  background: linear-gradient(135deg, #0284c7, #38bdf8) !important;
+}
+
+.history-head-actions .attendance-btn.save,
+.history-head-actions .attendance-btn.export {
+  background: linear-gradient(135deg, #10b981, #22c55e) !important;
+}
+
+
+
+
+
+
+/* ============================================================
+   MAIN ATTENDANCE PAGE REFRESH — CLEANER ACTIONS + SOFTER UI
+============================================================ */
+
+/* Softer main background */
+.attendance-studio {
+  background:
+    radial-gradient(circle at 8% 4%, rgba(20, 184, 166, 0.10), transparent 24%),
+    radial-gradient(circle at 92% 8%, rgba(14, 165, 233, 0.10), transparent 26%);
+}
+
+/* Make top selection dock less harsh */
+.attendance-control-dock {
+  background:
+    linear-gradient(135deg, #eefcff 0%, #f0fdf4 48%, #fff7ed 100%) !important;
+  border: 1px solid #bae6fd !important;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08) !important;
+}
+
+.attendance-control-dock .control-field label {
+  color: #0f766e !important;
+}
+
+.attendance-control-dock .control-field label i {
+  color: #0284c7 !important;
+}
+
+.attendance-control-dock .control-field select,
+.attendance-control-dock .control-field input {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04) !important;
+}
+
+.attendance-control-dock .control-field input::-webkit-calendar-picker-indicator {
+  filter: none !important;
+}
+
+/* Main dashboard cards */
+.today-card,
+.attendance-stat-card,
+.attendance-register-card,
+.attendance-toolbelt {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid #dbeafe !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Toolbelt layout improvement */
+.attendance-toolbelt {
+  grid-template-columns: minmax(280px, 420px) 1fr minmax(420px, 620px) !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+/* Filter pills softer */
+.filter-pill {
+  background: #eef6ff !important;
+  color: #334155 !important;
+  border: 1px solid #dbeafe !important;
+}
+
+.filter-pill.active {
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6) !important;
+  color: #ffffff !important;
+}
+
+/* Uniform quick action button grid */
+.quick-actions {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(120px, 1fr)) !important;
+  gap: 9px !important;
+  justify-content: stretch !important;
+  align-items: stretch !important;
+}
+
+.quick-btn {
+  width: 100% !important;
+  min-height: 42px !important;
+  border-radius: 14px !important;
+  padding: 0 12px !important;
+  justify-content: center !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.01em !important;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Muted, coordinated colors instead of too many loud colors */
+.quick-btn.success {
+  background: linear-gradient(135deg, #059669, #14b8a6) !important;
+  color: #ffffff !important;
+}
+
+.quick-btn.danger {
+  background: linear-gradient(135deg, #e11d48, #f43f5e) !important;
+  color: #ffffff !important;
+}
+
+.quick-btn.late {
+  background: linear-gradient(135deg, #f97316, #f59e0b) !important;
+  color: #ffffff !important;
+}
+
+.quick-btn.sick {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6) !important;
+  color: #ffffff !important;
+}
+
+.quick-btn.warning {
+  background: linear-gradient(135deg, #d97706, #f59e0b) !important;
+  color: #ffffff !important;
+}
+
+.quick-btn.dark {
+  background: linear-gradient(135deg, #334155, #0f172a) !important;
+  color: #ffffff !important;
+}
+
+/* Register card header improvement */
+.register-head {
+  background:
+    radial-gradient(circle at 5% 0%, rgba(20, 184, 166, 0.14), transparent 30%),
+    linear-gradient(135deg, #ffffff 0%, #f8fcff 55%, #ecfeff 100%) !important;
+  align-items: center !important;
+}
+
+.register-kicker {
+  background: #ecfeff !important;
+  color: #0f766e !important;
+}
+
+.register-head h2 {
+  font-size: 23px !important;
+  letter-spacing: -0.035em !important;
+}
+
+.register-head p {
+  color: #64748b !important;
+}
+
+/* Save box buttons cleaner and aligned */
+.register-save-box {
+  display: grid !important;
+  grid-template-columns: auto repeat(4, minmax(130px, auto)) !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+.register-save-box .attendance-btn {
+  min-height: 44px !important;
+  border-radius: 15px !important;
+}
+
+.attendance-btn.info {
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6) !important;
+}
+
+.attendance-btn.history {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  color: #ffffff !important;
+}
+
+.attendance-btn.danger {
+  background: linear-gradient(135deg, #ef4444, #f97316) !important;
+  color: #ffffff !important;
+}
+
+.attendance-btn.danger:disabled,
+.attendance-btn.save:disabled {
+  background: #f1f5f9 !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+}
+
+/* Session chips softer */
+.session-chip-row {
+  background: #f8fcff !important;
+}
+
+.session-chip-row span {
+  background: #eef6ff !important;
+  color: #475569 !important;
+  border: 1px solid #dbeafe !important;
+}
+
+/* Table header better than plain navy */
+.attendance-table thead th {
+  background: linear-gradient(135deg, #0f766e, #0284c7) !important;
+  color: #ffffff !important;
+}
+
+/* Better mobile/tablet wrapping */
+@media (max-width: 1320px) {
+  .attendance-toolbelt {
+    grid-template-columns: 1fr !important;
+  }
+
+  .quick-actions {
+    grid-template-columns: repeat(3, minmax(120px, 1fr)) !important;
+  }
+
+  .register-save-box {
+    grid-template-columns: repeat(2, minmax(150px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .quick-actions {
+    grid-template-columns: repeat(2, minmax(120px, 1fr)) !important;
+  }
+
+  .register-save-box {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+
+
+
+/* ============================================================
+   TINY QUICK ACTION BUTTONS — COMPACT, CLEAN, LESS COLOR RIOT
+============================================================ */
+
+.attendance-toolbelt {
+  grid-template-columns: minmax(260px, 430px) 1fr !important;
+  gap: 12px !important;
+}
+
+.quick-actions {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+  padding-top: 4px !important;
+}
+
+.quick-btn {
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 32px !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  gap: 6px !important;
+  box-shadow: none !important;
+  letter-spacing: 0 !important;
+}
+
+.quick-btn i {
+  font-size: 11px !important;
+}
+
+/* Calm unified button theme */
+.quick-btn.success,
+.quick-btn.danger,
+.quick-btn.late,
+.quick-btn.sick,
+.quick-btn.info,
+.quick-btn.warning,
+.quick-btn.dark {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #dbeafe !important;
+}
+
+.quick-btn.success i { color: #059669 !important; }
+.quick-btn.danger i { color: #e11d48 !important; }
+.quick-btn.late i { color: #f97316 !important; }
+.quick-btn.sick i { color: #7c3aed !important; }
+.quick-btn.info i { color: #0284c7 !important; }
+.quick-btn.warning i { color: #d97706 !important; }
+.quick-btn.dark i { color: #0f172a !important; }
+
+.quick-btn:hover {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Make filter pills smaller too */
+.filter-pill {
+  min-height: 32px !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  font-size: 11px !important;
+  border-radius: 999px !important;
+}
+
+.filter-pill.active {
+  background: #0f172a !important;
+  color: #ffffff !important;
+}
+
+/* Compact register action buttons */
+.register-save-box .attendance-btn {
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 11px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  box-shadow: none !important;
+}
+
+.register-save-box {
+  grid-template-columns: auto repeat(4, auto) !important;
+  gap: 7px !important;
+}
+
+.overwrite-toggle {
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 0 11px !important;
+  font-size: 11px !important;
+}
+
+/* Calm register button colors */
+.attendance-btn.info,
+.attendance-btn.history,
+.attendance-btn.danger,
+.attendance-btn.save {
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #dbeafe !important;
+  box-shadow: none !important;
+}
+
+.attendance-btn.info i { color: #0284c7 !important; }
+.attendance-btn.history i { color: #6366f1 !important; }
+.attendance-btn.danger i { color: #e11d48 !important; }
+.attendance-btn.save i { color: #16a34a !important; }
+
+.attendance-btn.save:not(:disabled):hover {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.attendance-btn.danger:not(:disabled):hover {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .attendance-toolbelt {
+    grid-template-columns: 1fr !important;
+  }
+
+  .quick-actions {
+    justify-content: flex-start !important;
+  }
+
+  .register-save-box {
+    grid-template-columns: repeat(2, auto) !important;
+    justify-content: flex-start !important;
+  }
+}
+
+
+
+
+/* ============================================================
+   HOVER STATES — SUBTLE BUT MEANINGFUL FEEDBACK
+============================================================ */
+
+/* Base hover (fallback) */
+.quick-btn:hover {
+  background: #f8fafc !important;
+  border-color: #cbd5f5 !important;
+}
+
+/* Present */
+.quick-btn.success:hover {
+  background: #dcfce7 !important;
+  border-color: #86efac !important;
+  color: #166534 !important;
+}
+
+/* Absent */
+.quick-btn.danger:hover {
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  color: #991b1b !important;
+}
+
+/* Late */
+.quick-btn.late:hover {
+  background: #ffedd5 !important;
+  border-color: #fdba74 !important;
+  color: #9a3412 !important;
+}
+
+/* Sick */
+.quick-btn.sick:hover {
+  background: #f3e8ff !important;
+  border-color: #d8b4fe !important;
+  color: #5b21b6 !important;
+}
+
+/* Excused */
+.quick-btn.info:hover {
+  background: #e0f2fe !important;
+  border-color: #7dd3fc !important;
+  color: #075985 !important;
+}
+
+/* Holiday */
+.quick-btn.warning:hover {
+  background: #fef3c7 !important;
+  border-color: #fcd34d !important;
+  color: #92400e !important;
+}
+
+/* Clear */
+.quick-btn.dark:hover {
+  background: #e2e8f0 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
+/* Slight press effect (feels responsive) */
+.quick-btn:active {
+  transform: scale(0.96) !important;
+}
+
+/* Optional: smoother feel */
+.quick-btn {
+  transition: all 0.18s ease !important;
+}

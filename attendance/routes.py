@@ -909,3 +909,48 @@ def attendance_dates_api():
         "dates": dates,
         "total_dates": len(dates),
     })
+
+
+
+
+
+@attendance_bp.route("/api/delete", methods=["POST", "DELETE"])
+def delete_attendance_api():
+    payload = request.get_json(silent=True) or {}
+
+    class_arm = normalize_arm(payload.get("class_arm"))
+    attendance_date = (payload.get("date") or "").strip()
+
+    if not class_arm:
+        return jsonify({
+            "ok": False,
+            "message": "Class arm is required.",
+        }), 400
+
+    if not attendance_date:
+        return jsonify({
+            "ok": False,
+            "message": "Attendance date is required.",
+        }), 400
+
+    rows = read_attendance_file(class_arm)
+
+    before_count = len(rows)
+
+    remaining_rows = [
+        row for row in rows
+        if row.get("Date") != attendance_date
+    ]
+
+    deleted_count = before_count - len(remaining_rows)
+
+    write_attendance_file(class_arm, remaining_rows)
+
+    return jsonify({
+        "ok": True,
+        "message": f"Deleted {deleted_count} attendance record(s) for {attendance_date}.",
+        "deleted_count": deleted_count,
+        "class_arm": class_arm,
+        "date": attendance_date,
+        "summary": build_summary(class_arm),
+    })

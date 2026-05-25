@@ -17,6 +17,7 @@ function initAttendanceStudio() {
     holiday: studio.dataset.holidayUrl,
     summary: studio.dataset.summaryUrl,
     history: studio.dataset.historyUrl,
+    delete: studio.dataset.deleteUrl,
     studentHistory: studio.dataset.studentHistoryUrl,
     reportAttendance: studio.dataset.reportAttendanceUrl,
     dates: studio.dataset.datesUrl
@@ -32,7 +33,12 @@ function initAttendanceStudio() {
     historyRecords: [],
     historyDaily: [],
     historyStudents: [],
-    historyDates: []
+    historyDates: [],
+    dirty: false,
+    autoSaveEnabled: false,
+    autoSaveTimer: null,
+    autoUpdateTimer: null,
+    lastLoadedSignature: ""
   };
 
   const els = {
@@ -49,6 +55,7 @@ function initAttendanceStudio() {
     saveBtn: document.getElementById("saveAttendanceBtn"),
     overwrite: document.getElementById("overwriteExisting"),
 
+    deleteCurrentBtn: document.getElementById("deleteCurrentAttendanceBtn"),
     tbody: document.getElementById("attendanceTableBody"),
     table: document.getElementById("attendanceTable"),
     search: document.getElementById("attendanceSearchInput"),
@@ -95,6 +102,8 @@ function initAttendanceStudio() {
     classArms = {};
   }
 
+  hydrateAutoSaveToggle();
+  ensureTodayDate();
   bindEvents();
   updateArmOptions();
   updateHistoryArmOptions();
@@ -109,15 +118,20 @@ function initAttendanceStudio() {
     els.session?.addEventListener("change", function () {
       updateChips();
       updateMiniDashboard();
+      scheduleAutoUpdate();
     });
 
     els.term?.addEventListener("change", function () {
       updateChips();
       updateMiniDashboard();
+      scheduleAutoUpdate();
     });
 
     els.date?.addEventListener("change", function () {
       updateMiniDashboard();
+      if (state.loadedClassArm && els.arm?.value === state.loadedClassArm) {
+        loadStudents();
+      }
     });
 
     els.loadBtn?.addEventListener("click", loadStudents);
@@ -125,6 +139,16 @@ function initAttendanceStudio() {
     els.saveBtn?.addEventListener("click", saveAttendance);
 
     els.search?.addEventListener("input", applyFilters);
+
+    els.deleteCurrentBtn?.addEventListener("click", deleteCurrentAttendance);
+
+    document.addEventListener("keydown", keyboardShortcuts);
+    document.getElementById("autoSaveToggle")?.addEventListener("change", toggleAutoSave);
+    window.addEventListener("beforeunload", function (event) {
+      if (!state.dirty) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
 
     document.querySelectorAll(".filter-pill").forEach((btn) => {
       btn.addEventListener("click", function () {
@@ -219,16 +243,26 @@ function initAttendanceStudio() {
     });
 
     els.historyDatesBody?.addEventListener("click", function (event) {
-      const btn = event.target.closest("[data-load-date]");
-      if (!btn) return;
+      const loadBtn = event.target.closest("[data-load-date]");
+      const deleteBtn = event.target.closest("[data-delete-date]");
 
-      const selectedDate = btn.dataset.loadDate;
-      if (!selectedDate) return;
+      if (loadBtn) {
+        const selectedDate = loadBtn.dataset.loadDate;
+        if (!selectedDate) return;
 
-      if (els.historyStartDate) els.historyStartDate.value = selectedDate;
-      if (els.historyEndDate) els.historyEndDate.value = selectedDate;
+        if (els.historyStartDate) els.historyStartDate.value = selectedDate;
+        if (els.historyEndDate) els.historyEndDate.value = selectedDate;
 
-      loadHistory();
+        loadHistory();
+        return;
+      }
+
+      if (deleteBtn) {
+        const selectedDate = deleteBtn.dataset.deleteDate;
+        if (!selectedDate) return;
+
+        deleteAttendanceDate(selectedDate);
+      }
     });
   }
 
@@ -332,6 +366,11 @@ function initAttendanceStudio() {
       updateChips();
       updateMiniDashboard();
       updateExistingRecordCount(data.existing_count || 0);
+      markClean();
+
+      if (els.deleteCurrentBtn) {
+        els.deleteCurrentBtn.disabled = !(data.existing_count > 0);
+      }
 
       if (els.saveBtn) {
         els.saveBtn.disabled = state.students.length === 0;
@@ -500,6 +539,7 @@ function initAttendanceStudio() {
 
     row.dataset.reason = row.querySelector(".reason-input")?.value || "";
     row.dataset.note = row.querySelector(".note-input")?.value || "";
+    markDirty();
   }
 
   function markAll(status) {
@@ -553,7 +593,8 @@ function initAttendanceStudio() {
 
   /* ================= SAVE ================= */
 
- async function saveAttendance() {
+ async function saveAttendance(options = {}) {
+  const silent = !!options.silent;
   const rows = getAllRows();
 
   if (!rows.length || rows[0].classList.contains("empty-row")) {
@@ -582,8 +623,7 @@ function initAttendanceStudio() {
   };
 
   try {
-    els.saveBtn.disabled = true;
-    els.saveBtn.classList.add("saving");
+    setBusy(els.saveBtn, true, options.source === "auto" ? "Auto saving..." : "Saving...");
 
     const data = await postJSON(urls.save, payload);
 
@@ -598,28 +638,215 @@ function initAttendanceStudio() {
       updateClassSummaryCounters(data.class_summary);
     }
 
-    await loadQuickReportSummary();
+    markClean();
 
-    // ✅ Quick feedback
-    toast(
-      "Attendance Saved",
-      `${savedCount} record(s) saved for ${className}.`,
-      "success"
-    );
+    if (els.deleteCurrentBtn) els.deleteCurrentBtn.disabled = savedCount <= 0;
 
-    // ✅ Strong visual confirmation
-    successFlash(
-      "Attendance Saved Successfully",
-      `${savedCount} record(s) saved for ${className} on ${dateText}.`
-    );
+    await autoUpdateAfterMutation({ refreshHistory: true });
+
+    if (!silent) {
+      toast(
+        "Attendance Saved",
+        `${savedCount} record(s) saved for ${className}.`,
+        "success"
+      );
+
+      successFlash(
+        "Attendance Saved Successfully",
+        `${savedCount} record(s) saved for ${className} on ${dateText}.`
+      );
+    }
 
   } catch (error) {
     toast("Save failed", error.message, "error");
   } finally {
-    els.saveBtn.disabled = false;
-    els.saveBtn.classList.remove("saving");
+    setBusy(els.saveBtn, false);
+    if (els.saveBtn) els.saveBtn.disabled = state.students.length === 0;
   }
 }
+
+  /* ================= DELETE CURRENT ATTENDANCE ================= */
+
+  async function deleteCurrentAttendance() {
+    const classArm = state.loadedClassArm || els.arm?.value || "";
+    const classCategory = state.loadedClassCategory || els.level?.value || "";
+    const dateValue = els.date?.value || "";
+
+    if (!urls.delete) {
+      toast("Delete unavailable", "Delete API URL is missing on the page. Add data-delete-url to .attendance-studio.", "error");
+      return;
+    }
+
+    if (!classArm || !classCategory || !dateValue) {
+      toast("Missing selection", "Select/load class level, arm and date before deleting attendance.", "warning");
+      return;
+    }
+
+    const className = classArm.replaceAll("_", " ");
+    const dateText = formatDate(dateValue) || dateValue;
+
+    const approved = confirm(
+      `Delete attendance for ${className} on ${dateText}?\n\nThis will remove the saved attendance records for this date and cannot be undone.`
+    );
+
+    if (!approved) return;
+
+    try {
+      setBusy(els.deleteCurrentBtn, true, "Deleting...");
+
+      const data = await postJSON(urls.delete, {
+        session: els.session?.value || "",
+        term: els.term?.value || "",
+        class_arm: classArm,
+        class_category: classCategory,
+        date: dateValue
+      });
+
+      updateExistingRecordCount(0);
+      setText("chipTimestamp", "Deleted");
+      markClean();
+
+      if (els.saveBtn) els.saveBtn.disabled = state.students.length === 0;
+      if (els.deleteCurrentBtn) els.deleteCurrentBtn.disabled = true;
+
+      await autoUpdateAfterMutation({ refreshStudents: true, refreshHistory: true });
+
+      toast("Attendance deleted", data.message || `${className} attendance for ${dateText} deleted successfully.`, "success");
+      successFlash("Attendance Deleted", `${className} attendance for ${dateText} was deleted successfully.`);
+    } catch (error) {
+      toast("Delete failed", error.message, "error");
+    } finally {
+      setBusy(els.deleteCurrentBtn, false);
+    }
+  }
+
+  function markDirty() {
+    state.dirty = true;
+    studio.classList.add("has-unsaved-changes");
+
+    if (els.saveBtn && state.students.length) {
+      els.saveBtn.disabled = false;
+    }
+
+    scheduleAutoSave();
+  }
+
+  function markClean() {
+    state.dirty = false;
+    studio.classList.remove("has-unsaved-changes");
+  }
+
+  function hydrateAutoSaveToggle() {
+    const saved = localStorage.getItem("attendanceAutoSaveEnabled");
+    state.autoSaveEnabled = saved === "1";
+
+    const toggle = document.getElementById("autoSaveToggle");
+    if (toggle) toggle.checked = state.autoSaveEnabled;
+  }
+
+  function toggleAutoSave(event) {
+    state.autoSaveEnabled = !!event.target.checked;
+    localStorage.setItem("attendanceAutoSaveEnabled", state.autoSaveEnabled ? "1" : "0");
+
+    if (state.autoSaveEnabled) {
+      toast("Auto save enabled", "Changes will auto-save shortly after marking.", "success");
+      scheduleAutoSave();
+    } else {
+      clearTimeout(state.autoSaveTimer);
+      toast("Auto save disabled", "Use the Save Attendance button when you are done.", "info");
+    }
+  }
+
+  function scheduleAutoSave() {
+    clearTimeout(state.autoSaveTimer);
+
+    if (!state.autoSaveEnabled || !state.dirty) return;
+
+    state.autoSaveTimer = setTimeout(async () => {
+      if (!state.dirty) return;
+      try {
+        await saveAttendance({ silent: true, source: "auto" });
+        toast("Auto saved", "Attendance changes were saved automatically.", "success");
+      } catch {
+        /* saveAttendance already shows the error */
+      }
+    }, 9000);
+  }
+
+  function scheduleAutoUpdate(delay = 900) {
+    clearTimeout(state.autoUpdateTimer);
+    state.autoUpdateTimer = setTimeout(() => {
+      loadQuickReportSummary();
+      if (els.historyModal?.classList.contains("show") && els.historyArm?.value) {
+        loadHistory();
+      }
+    }, delay);
+  }
+
+  async function autoUpdateAfterMutation(options = {}) {
+    const refreshStudents = !!options.refreshStudents;
+    const refreshHistory = !!options.refreshHistory;
+
+    await loadQuickReportSummary();
+
+    if (refreshHistory && els.historyModal?.classList.contains("show") && els.historyArm?.value) {
+      await loadHistory();
+    }
+
+    if (refreshStudents && state.loadedClassArm && els.date?.value) {
+      await softReloadStudents();
+    }
+  }
+
+  async function softReloadStudents() {
+    if (!state.loadedClassArm || !els.date?.value || !urls.students) return;
+
+    try {
+      const params = new URLSearchParams({
+        class_arm: state.loadedClassArm,
+        date: els.date.value
+      });
+
+      const data = await fetchJSON(`${urls.students}?${params.toString()}`);
+
+      if (Array.isArray(data.students)) {
+        state.students = data.students;
+        renderStudents(state.students);
+        updateCounters();
+        updateSelectedCount();
+        updateExistingRecordCount(data.existing_count || 0);
+        if (els.deleteCurrentBtn) els.deleteCurrentBtn.disabled = !(data.existing_count > 0);
+      }
+    } catch {
+      /* Silent reload failure; user already completed main action. */
+    }
+  }
+
+  function keyboardShortcuts(event) {
+    if (event.target && ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName)) return;
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+      event.preventDefault();
+      if (els.saveBtn && !els.saveBtn.disabled) saveAttendance();
+    }
+
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "r") {
+      event.preventDefault();
+      loadStudents();
+    }
+
+    if (event.key.toLowerCase() === "p") markSelected("PRESENT");
+    if (event.key.toLowerCase() === "a") markSelected("ABSENT");
+    if (event.key.toLowerCase() === "l") markSelected("LATE");
+  }
+
+  function ensureTodayDate() {
+    if (els.date && !els.date.value) {
+      els.date.value = new Date().toISOString().slice(0, 10);
+    }
+  }
+
+
   /* ================= HOLIDAY ================= */
 
   function openHolidayModal() {
@@ -661,14 +888,12 @@ function initAttendanceStudio() {
 
     await loadQuickReportSummary();
 
-    // ✅ Standard toast (quick feedback)
     toast(
       "Holiday Saved",
       `${className} marked as holiday for ${dateText}.`,
       "success"
     );
 
-    // ✅ Strong visual confirmation (overlay)
     successFlash(
       "Holiday Recorded Successfully",
       `${className} has been marked as not in session (${dateText}).`
@@ -966,42 +1191,50 @@ function initAttendanceStudio() {
       `;
     }).join("");
   }
+  
 
-  function renderHistoryDates(dates) {
-    if (!els.historyDatesBody) return;
+function renderHistoryDates(dates) {
+  if (!els.historyDatesBody) return;
 
-    if (!dates.length) {
-      els.historyDatesBody.innerHTML = `
-        <tr>
-          <td colspan="10">No saved dates found for this class.</td>
-        </tr>
-      `;
-      return;
-    }
+  if (!dates.length) {
+    els.historyDatesBody.innerHTML = `
+      <tr>
+        <td colspan="10">No saved dates found for this class.</td>
+      </tr>
+    `;
+    return;
+  }
 
-    els.historyDatesBody.innerHTML = dates.map((item) => {
-      const summary = item.summary || {};
+  els.historyDatesBody.innerHTML = dates.map((item) => {
+    const summary = item.summary || {};
 
-      return `
-        <tr>
-          <td>${escapeHTML(item.date || "—")}</td>
-          <td>${escapeHTML(item.day || "—")}</td>
-          <td>${escapeHTML(item.month || "—")}</td>
-          <td>${escapeHTML(item.week || "—")}</td>
-          <td>${item.record_count || 0}</td>
-          <td>${summary.present || 0}</td>
-          <td>${summary.absent || 0}</td>
-          <td>${summary.late || 0}</td>
-          <td>${summary.sick || 0}</td>
-          <td>
+    return `
+      <tr>
+        <td>${escapeHTML(item.date || "—")}</td>
+        <td>${escapeHTML(item.day || "—")}</td>
+        <td>${escapeHTML(item.month || "—")}</td>
+        <td>${escapeHTML(item.week || "—")}</td>
+        <td>${item.record_count || 0}</td>
+        <td>${summary.present || 0}</td>
+        <td>${summary.absent || 0}</td>
+        <td>${summary.late || 0}</td>
+        <td>${summary.sick || 0}</td>
+        <td>
+          <div class="history-date-actions">
             <button type="button" class="row-action-btn" data-load-date="${escapeHTML(item.date || "")}" title="Load this date">
               <i class="fa-solid fa-eye"></i>
             </button>
-          </td>
-        </tr>
-      `;
-    }).join("");
-  }
+
+            <button type="button" class="row-action-btn danger" data-delete-date="${escapeHTML(item.date || "")}" title="Delete this date">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
 
   function switchHistoryTab(tabName) {
     document.querySelectorAll(".history-tab").forEach((tab) => {
@@ -1032,6 +1265,40 @@ function initAttendanceStudio() {
 
     toast("Filters reset", "History filters have been cleared.", "success");
   }
+
+
+  async function deleteAttendanceDate(attendanceDate) {
+  const classArm = els.historyArm?.value || "";
+
+  if (!classArm) {
+    toast("Select class", "Select class arm before deleting.", "warning");
+    return;
+  }
+
+  if (!confirm(`Delete all attendance records for ${attendanceDate}? This cannot be undone.`)) {
+    return;
+  }
+
+  try {
+    const data = await postJSON(urls.delete, {
+      session: els.historySession?.value || els.session?.value || "",
+      term: els.historyTerm?.value || els.term?.value || "",
+      class_arm: classArm,
+      class_category: els.historyLevel?.value || els.level?.value || "",
+      date: attendanceDate
+    });
+
+    toast("Attendance deleted", data.message || "Attendance record deleted successfully.", "success");
+    successFlash("Attendance Deleted", `${classArm.replaceAll("_", " ")} record for ${attendanceDate} was deleted.`);
+
+    await loadHistory();
+    await autoUpdateAfterMutation({ refreshStudents: attendanceDate === els.date?.value, refreshHistory: false });
+
+  } catch (error) {
+    toast("Delete failed", error.message, "error");
+  }
+}
+
 
   function exportHistoryCsv() {
     const records = state.historyRecords || [];
@@ -1205,12 +1472,10 @@ async function openSummaryModal() {
       term: els.term?.value || ""
     });
 
-    const data = await fetch(`/attendance/api/history?${params}`)
-      .then(res => res.json());
+    const data = await fetchJSON(`${urls.summary || urls.history}?${params.toString()}`);
 
     console.log("SUMMARY DATA:", data);
 
-    // TEMP: just show quick summary
     const summary = data.summary || {};
 
     successFlash(
@@ -1277,7 +1542,35 @@ async function openSummaryModal() {
     }
   }
 
+  function setBusy(button, isBusy, label) {
+    if (!button) return;
+
+    if (isBusy) {
+      button.dataset.originalHtml = button.dataset.originalHtml || button.innerHTML;
+      button.disabled = true;
+      button.classList.add("saving", "is-busy");
+
+      if (label) {
+        button.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${escapeHTML(label)}`;
+      }
+    } else {
+      button.classList.remove("saving", "is-busy");
+      if (button.dataset.originalHtml) {
+        button.innerHTML = button.dataset.originalHtml;
+      }
+
+      if (button === els.saveBtn) {
+        button.disabled = state.students.length === 0;
+      } else if (button === els.deleteCurrentBtn) {
+        button.disabled = Number(document.getElementById("existingRecordCount")?.textContent || "0") <= 0;
+      } else {
+        button.disabled = false;
+      }
+    }
+  }
+
   async function fetchJSON(url) {
+    if (!url) throw new Error("Missing API URL for this action.");
     const response = await fetch(url, {
       headers: { Accept: "application/json" }
     });
@@ -1292,6 +1585,7 @@ async function openSummaryModal() {
   }
 
   async function postJSON(url, payload) {
+    if (!url) throw new Error("Missing API URL for this action.");
     const response = await fetch(url, {
       method: "POST",
       headers: {
