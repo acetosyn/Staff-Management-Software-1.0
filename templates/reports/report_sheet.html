@@ -1,12 +1,870 @@
 {% extends "base.html" %}
 
-{% block title %}Page — Staff Management Software{% endblock %}
+{% block title %}Report Sheet — Staff Management Software{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/report_sheet.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/report_sheet_pdf.css') }}">
+{% endblock %}
 
 {% block content %}
-<div class="page-shell">
-  <section class="page-card" style="padding: 30px;">
-    <h1>Page Connected</h1>
-    <p>This page is loading through base.html.</p>
+
+<div class="report-page"
+     data-config-url="{{ url_for('reports.report_config_api') }}"
+     data-preview-url="{{ url_for('reports.report_preview_api') }}"
+     data-generate-url="{{ url_for('reports.report_generate_api') }}"
+     data-students-url="{{ url_for('reports.report_students_api') }}"
+     data-saved-url="{{ url_for('reports.report_saved_api') }}"
+     data-delete-saved-url="{{ url_for('reports.report_delete_saved_api') }}"
+     data-export-csv-url="{{ url_for('reports.report_export_csv_api') }}"
+     data-export-excel-url="{{ url_for('reports.report_export_excel_api') }}">
+
+  <div id="reportFlashStack" class="report-flash-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <section class="report-hero">
+    <div class="report-hero-left">
+      <span class="report-kicker">
+        <i class="fa-solid fa-file-circle-check"></i>
+        Result Generation Studio
+      </span>
+
+      <h1>Automated Report Sheet Generator</h1>
+
+      <p>
+        Load students, confirm CA/Test and Supabase CBT records, then generate clean printable report sheets.
+      </p>
+
+      <div class="report-mini-row">
+        <span><i class="fa-solid fa-users"></i> Students</span>
+        <span><i class="fa-solid fa-clipboard-check"></i> CA/Test</span>
+        <span><i class="fa-solid fa-cloud"></i> Supabase CBT</span>
+        <span><i class="fa-solid fa-calendar-check"></i> Attendance</span>
+        <span><i class="fa-solid fa-pen-to-square"></i> Remarks</span>
+        <span><i class="fa-solid fa-file-pdf"></i> PDF</span>
+      </div>
+    </div>
+
+    <div class="report-live-card">
+      <span>Report Engine</span>
+      <strong id="reportStatusLabel">Waiting</strong>
+      <small id="reportStatusHint">Select class and load students to begin.</small>
+    </div>
   </section>
+
+  <section class="report-stats-grid">
+    <article class="report-stat-card">
+      <div class="report-stat-icon blue"><i class="fa-solid fa-users"></i></div>
+      <div>
+        <span>Students Found</span>
+        <strong id="reportStudentsCount">0</strong>
+        <small>Loaded from class list</small>
+      </div>
+    </article>
+
+    <article class="report-stat-card">
+      <div class="report-stat-icon green"><i class="fa-solid fa-file-circle-check"></i></div>
+      <div>
+        <span>Reports Ready</span>
+        <strong id="reportReadyCount">0</strong>
+        <small>Generated reports</small>
+      </div>
+    </article>
+
+    <article class="report-stat-card">
+      <div class="report-stat-icon orange"><i class="fa-solid fa-book-open"></i></div>
+      <div>
+        <span>Subjects</span>
+        <strong id="reportSubjectsCount">0</strong>
+        <small>Matched subjects</small>
+      </div>
+    </article>
+
+    <article class="report-stat-card">
+      <div class="report-stat-icon purple"><i class="fa-solid fa-chart-line"></i></div>
+      <div>
+        <span>Class Average</span>
+        <strong id="reportClassAverage">--</strong>
+        <small>Generated class stats</small>
+      </div>
+    </article>
+  </section>
+
+  <section class="report-control-panel report-control-panel-v2">
+    <div class="report-control-head compact">
+      <div>
+        <span class="section-kicker">Report Setup</span>
+        <h2><i class="fa-solid fa-sliders"></i> Class & Result Setup</h2>
+      </div>
+
+      <div class="report-head-actions">
+        <button type="button" id="openReportRulesBtn" class="report-mini-btn">
+          <i class="fa-solid fa-circle-info"></i>
+          Rules
+        </button>
+
+        <button type="button" id="openSavedReportsBtn" class="report-mini-btn">
+          <i class="fa-solid fa-folder-open"></i>
+          Saved
+        </button>
+      </div>
+    </div>
+
+    <div class="report-control-grid compact-grid">
+      <div class="report-action-group setup">
+        <div class="report-group-title">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span>Academic</span>
+        </div>
+
+        <div class="report-group-fields two">
+          <div class="form-group">
+            <label class="form-label">Session</label>
+            <div class="report-input-wrap">
+              <i class="fa-solid fa-calendar-days"></i>
+              <select id="reportSession" class="form-input">
+                <option value="2025/2026">2025/2026</option>
+                <option value="2026/2027">2026/2027</option>
+                <option value="2027/2028">2027/2028</option>
+                <option value="2028/2029">2028/2029</option>
+                <option value="2029/2030">2029/2030</option>
+                <option value="2030/2031">2030/2031</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Term</label>
+            <div class="report-input-wrap">
+              <i class="fa-solid fa-book-open-reader"></i>
+              <select id="reportTerm" class="form-input">
+                <option value="FIRST TERM">FIRST TERM</option>
+                <option value="SECOND TERM">SECOND TERM</option>
+                <option value="THIRD TERM">THIRD TERM</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-action-group class">
+        <div class="report-group-title">
+          <i class="fa-solid fa-school"></i>
+          <span>Class</span>
+        </div>
+
+        <div class="report-group-fields two">
+          <div class="form-group">
+            <label class="form-label">Level</label>
+            <div class="report-input-wrap">
+              <i class="fa-solid fa-school"></i>
+              <select id="reportClassLevel" class="form-input">
+                <option value="">Select level</option>
+                <option value="JSS1">JSS1</option>
+                <option value="JSS2">JSS2</option>
+                <option value="JSS3">JSS3</option>
+                <option value="SS1">SS1</option>
+                <option value="SS2">SS2</option>
+                <option value="SS3">SS3</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Arm</label>
+            <div class="report-input-wrap">
+              <i class="fa-solid fa-users-line"></i>
+              <select id="reportClassArm" class="form-input">
+                <option value="">Select arm</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<div class="report-action-group details">
+  <div class="report-group-title">
+    <i class="fa-solid fa-user-tie"></i>
+    <span>Details</span>
+  </div>
+
+  <div class="report-group-fields two">
+    <div class="form-group">
+      <label class="form-label">Form Teacher</label>
+      <div class="report-input-wrap">
+        <i class="fa-solid fa-user-tie"></i>
+        <input id="reportFormTeacher" class="form-input" type="text" placeholder="Class Teacher">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label next-term-label">
+        <span>Next Term</span>
+        <button type="button"
+                id="saveNextTermBtn"
+                class="report-mini-save-btn"
+                title="Save as default for all reports">
+          <i class="fa-solid fa-floppy-disk"></i>
+          Set
+        </button>
+      </label>
+
+      <div class="report-input-wrap">
+        <i class="fa-solid fa-calendar-plus"></i>
+        <input id="reportNextTerm" class="form-input" type="date">
+      </div>
+
+      <small class="report-field-note">
+        Saved date will automatically appear in all future report sheets.
+      </small>
+    </div>
+  </div>
 </div>
+
+<div class="report-action-group actions">
+  <div class="report-group-title">
+    <i class="fa-solid fa-wand-magic-sparkles"></i>
+    <span>Generate</span>
+  </div>
+
+  <div class="report-compact-actions">
+    <button id="loadReportStudentsBtn" type="button" class="report-btn neutral">
+      <i class="fa-solid fa-users-viewfinder"></i>
+      Load
+    </button>
+
+    <button id="previewReportsBtn" type="button" class="report-btn primary">
+      <i class="fa-solid fa-eye"></i>
+      Preview
+    </button>
+
+    <button id="generateSelectedReportBtn" type="button" class="report-btn warning">
+      <i class="fa-solid fa-user-check"></i>
+      Selected
+    </button>
+
+    <button id="generateReportsBtn" type="button" class="report-btn success">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      Full Class
+    </button>
+  </div>
+</div>
+
+
+    </div>
+  </section>
+
+  <section class="report-action-dock report-action-dock-v2">
+    <div class="report-dock-group">
+      <span class="dock-group-label"><i class="fa-solid fa-pen"></i> Edit</span>
+
+      <button type="button" id="openRemarksTraitsBtn" class="report-dock-btn">
+        <i class="fa-solid fa-pen-to-square"></i>
+        <span>Remarks</span>
+      </button>
+    </div>
+
+    <div class="report-dock-group">
+      <span class="dock-group-label"><i class="fa-solid fa-print"></i> Print</span>
+
+      <button type="button" id="printSelectedReportBtn" class="report-dock-btn">
+        <i class="fa-solid fa-print"></i>
+        <span>Selected</span>
+      </button>
+
+      <button type="button" id="printAllReportsBtn" class="report-dock-btn">
+        <i class="fa-solid fa-print"></i>
+        <span>All</span>
+      </button>
+
+      <button type="button" id="viewPdfReportBtn" class="report-dock-btn">
+        <i class="fa-solid fa-file-pdf"></i>
+        <span>PDF</span>
+      </button>
+    </div>
+
+    <div class="report-dock-group">
+      <span class="dock-group-label"><i class="fa-solid fa-file-export"></i> Export</span>
+
+      <button type="button" id="exportReportsCsvBtn" class="report-dock-btn">
+        <i class="fa-solid fa-file-csv"></i>
+        <span>CSV</span>
+      </button>
+
+      <button type="button" id="exportReportsExcelBtn" class="report-dock-btn">
+        <i class="fa-solid fa-file-excel"></i>
+        <span>Excel</span>
+      </button>
+    </div>
+
+    <div class="report-dock-group">
+      <span class="dock-group-label"><i class="fa-solid fa-shield-halved"></i> Tools</span>
+
+      <button type="button" id="markResultsUsedBtn" class="report-dock-btn">
+        <i class="fa-solid fa-lock"></i>
+        <span>Mark Used</span>
+      </button>
+
+      <button type="button" id="clearReportPreviewBtn" class="report-dock-btn danger">
+        <i class="fa-solid fa-eraser"></i>
+        <span>Clear</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="report-mode-grid">
+    <article class="report-mode-card active" id="reportJssModeCard">
+      <span class="mode-badge">JSS Mode</span>
+      <h3><i class="fa-solid fa-table-cells"></i> JSS Report Structure</h3>
+      <div class="mode-score-row">
+        <span>CA1 /10</span>
+        <span>CA2 /10</span>
+        <span>TEST1 /20</span>
+        <span>TEST2 /20</span>
+        <span>EXAM /40</span>
+        <span>TOTAL /100</span>
+        <span>POS / OUT OF</span>
+        <span>LOW / HIGH / AVE</span>
+      </div>
+      <p>Used for JSS1, JSS2 and JSS3 result sheets.</p>
+    </article>
+
+    <article class="report-mode-card" id="reportSsModeCard">
+      <span class="mode-badge">SS Mode</span>
+      <h3><i class="fa-solid fa-table-list"></i> SS Report Structure</h3>
+      <div class="mode-score-row">
+        <span>1ST ASS. /5</span>
+        <span>2ND ASS. /5</span>
+        <span>TEST /20</span>
+        <span>EXAM /70</span>
+        <span>TOTAL /100</span>
+        <span>POS / OUT OF</span>
+        <span>LOW / HIGH / AVE</span>
+      </div>
+      <p>Used for SS1, SS2 and SS3 result sheets.</p>
+    </article>
+  </section>
+
+  <section class="report-data-board">
+    <article class="report-data-card report-students-panel">
+      <div class="report-data-head">
+        <div>
+          <span class="section-kicker">Class Students</span>
+          <h2><i class="fa-solid fa-user-graduate"></i> Loaded Students</h2>
+        </div>
+
+        <div class="report-table-tools">
+          <div class="report-table-search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input id="loadedStudentsSearchInput" type="search" placeholder="Search student, admission no, class...">
+          </div>
+
+          <button type="button" id="selectAllLoadedStudentsBtn" class="report-mini-btn">
+            <i class="fa-solid fa-check-double"></i>
+            Select Visible
+          </button>
+
+          <button type="button" id="clearSelectedLoadedStudentsBtn" class="report-mini-btn danger-soft">
+            <i class="fa-solid fa-xmark"></i>
+            Clear Selection
+          </button>
+
+          <button type="button" id="refreshReportStudentsBtn" class="report-mini-btn">
+            <i class="fa-solid fa-rotate"></i>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="report-table-summary-strip">
+        <article><span>Total Loaded</span><strong id="loadedStudentsTotalCount">0</strong></article>
+        <article><span>Selected</span><strong id="loadedStudentsSelectedCount">0</strong></article>
+        <article><span>CA Ready</span><strong id="loadedStudentsCaReadyCount">0</strong></article>
+        <article><span>CBT Found</span><strong id="loadedStudentsExamReadyCount">0</strong></article>
+        <article><span>Attendance</span><strong id="loadedStudentsAttendanceCount">0</strong></article>
+      </div>
+
+      <div class="report-table-filter-strip">
+        <button type="button" id="filterLoadedAllBtn" class="report-table-filter active" data-loaded-filter="all">
+          <i class="fa-solid fa-table-list"></i>
+          All
+        </button>
+
+        <button type="button" id="filterLoadedSelectedBtn" class="report-table-filter" data-loaded-filter="selected">
+          <i class="fa-solid fa-check"></i>
+          Selected
+        </button>
+
+        <button type="button" id="filterLoadedMissingCaBtn" class="report-table-filter" data-loaded-filter="missing_ca">
+          <i class="fa-solid fa-clipboard-question"></i>
+          Missing CA
+        </button>
+
+        <button type="button" id="filterLoadedMissingExamBtn" class="report-table-filter" data-loaded-filter="missing_exam">
+          <i class="fa-solid fa-cloud-circle-exclamation"></i>
+          Missing CBT
+        </button>
+
+        <button type="button" id="filterLoadedReadyBtn" class="report-table-filter" data-loaded-filter="ready">
+          <i class="fa-solid fa-circle-check"></i>
+          Ready
+        </button>
+      </div>
+
+      <div class="report-table-wrap report-students-table-wrap">
+        <table class="report-students-table">
+          <thead>
+            <tr>
+              <th class="check-col">
+                <input type="checkbox" id="reportSelectAllCheckbox" aria-label="Select all visible students">
+              </th>
+              <th>#</th>
+              <th>Admission No</th>
+              <th>Student Name</th>
+              <th>Class</th>
+              <th>CA/Test</th>
+              <th>CBT Exam</th>
+              <th>Attendance</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody id="reportStudentsTableBody">
+            <tr>
+              <td colspan="9" class="report-table-empty">
+                <i class="fa-solid fa-users"></i>
+                <strong>No students loaded yet</strong>
+                <span>Select a class and click Load Students.</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="report-table-footer">
+        <span id="loadedStudentsPageInfo">No students loaded</span>
+
+        <div class="report-page-size">
+          <label for="loadedStudentsPageSize">Rows</label>
+          <select id="loadedStudentsPageSize">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+
+        <div class="report-pagination">
+          <button type="button" id="prevLoadedStudentsPageBtn" title="Previous page">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+
+          <button type="button" id="nextLoadedStudentsPageBtn" title="Next page">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <aside class="report-data-card compact report-source-panel">
+      <div class="report-data-head">
+        <div>
+          <span class="section-kicker">Merge</span>
+          <h2><i class="fa-solid fa-diagram-project"></i> Sources</h2>
+        </div>
+      </div>
+
+      <div class="report-source-list compact">
+        <article>
+          <i class="fa-solid fa-users"></i>
+          <div>
+            <strong>Student CSV</strong>
+            <span id="studentSourceStatus">Waiting for class selection</span>
+          </div>
+        </article>
+
+        <article>
+          <i class="fa-solid fa-clipboard-check"></i>
+          <div>
+            <strong>CA/Test</strong>
+            <span id="caSourceStatus">Preview will check saved CA/Test</span>
+          </div>
+        </article>
+
+        <article>
+          <i class="fa-solid fa-cloud"></i>
+          <div>
+            <strong>CBT</strong>
+            <span id="examSourceStatus">Exam scores fetched during generation</span>
+          </div>
+        </article>
+
+        <article>
+          <i class="fa-solid fa-calendar-check"></i>
+          <div>
+            <strong>Attendance</strong>
+            <span id="attendanceSourceStatus">Attendance is merged if available</span>
+          </div>
+        </article>
+
+        <article>
+          <i class="fa-solid fa-pen-nib"></i>
+          <div>
+            <strong>Remarks & Ratings</strong>
+            <span id="remarksSourceStatus">Editable remarks and ratings are handled on this page.</span>
+          </div>
+        </article>
+      </div>
+    </aside>
+  </section>
+
+  <section class="report-toolbar">
+    <div class="report-search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input id="reportSearchInput" type="search" placeholder="Search generated reports by name or admission number...">
+    </div>
+
+    <div class="report-toolbar-actions">
+      <button id="showMissingExamBtn" type="button" class="report-chip">
+        <i class="fa-solid fa-cloud-circle-exclamation"></i>
+        Missing CBT
+      </button>
+
+      <button id="showMissingAttendanceBtn" type="button" class="report-chip">
+        <i class="fa-solid fa-user-clock"></i>
+        Missing Attendance
+      </button>
+
+      <button id="showMissingCaBtn" type="button" class="report-chip">
+        <i class="fa-solid fa-clipboard-question"></i>
+        Missing CA/Test
+      </button>
+
+      <button id="showReadyOnlyBtn" type="button" class="report-chip">
+        <i class="fa-solid fa-circle-check"></i>
+        Ready Only
+      </button>
+    </div>
+  </section>
+
+  <section class="report-preview-shell">
+    <aside class="report-student-list-card">
+      <div class="report-list-head">
+        <span class="section-kicker">Generated Students</span>
+        <h2><i class="fa-solid fa-file-lines"></i> Report List</h2>
+      </div>
+
+      <div id="reportStudentList" class="report-student-list">
+        <div class="report-empty-small">
+          <i class="fa-solid fa-file-lines"></i>
+          <strong>No report generated yet</strong>
+          <span>Preview or generate reports to see students here.</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="report-preview-card">
+      <div class="report-preview-head">
+        <div>
+          <span class="section-kicker">Live Result Sheet</span>
+          <h2><i class="fa-solid fa-file-invoice"></i> Student Report Preview</h2>
+          <p id="reportPreviewSubtext">Generated report preview will appear here.</p>
+        </div>
+
+        <div class="report-preview-actions">
+          <button type="button" id="editCurrentReportRemarksBtn" class="report-mini-btn">
+            <i class="fa-solid fa-pen-to-square"></i>
+            Edit Remarks
+          </button>
+
+          <button type="button" id="inspectCurrentReportBtn" class="report-mini-btn">
+            <i class="fa-solid fa-magnifying-glass-chart"></i>
+            Inspect
+          </button>
+
+          <div class="report-preview-status" id="reportPreviewStatus">
+            Waiting
+          </div>
+        </div>
+      </div>
+
+      <div id="reportSheetCanvas" class="report-sheet-canvas">
+        <div class="report-empty">
+          <i class="fa-solid fa-file-circle-plus"></i>
+          <strong>No report selected</strong>
+          <span>Generate reports, then open one student at a time from the report list.</span>
+        </div>
+      </div>
+    </section>
+  </section>
+
+</div>
+
+<div id="reportRulesModal" class="report-modal" aria-hidden="true">
+  <div class="report-modal-panel">
+    <div class="report-modal-head">
+      <div>
+        <span class="section-kicker">Generation Rules</span>
+        <h3>Report Sheet Requirements</h3>
+        <p>Rules used by the report generation engine.</p>
+      </div>
+
+      <button type="button" class="report-modal-close" data-close-modal="reportRulesModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="report-rules-grid">
+      <article>
+        <i class="fa-solid fa-users"></i>
+        <strong>Students are loaded by class</strong>
+        <span>The report page first fetches students from the selected class arm.</span>
+      </article>
+
+      <article>
+        <i class="fa-solid fa-list-check"></i>
+        <strong>Students can be selected</strong>
+        <span>Use checkboxes to generate one or more selected student reports.</span>
+      </article>
+
+      <article>
+        <i class="fa-solid fa-clipboard-check"></i>
+        <strong>CA/Test is compulsory</strong>
+        <span>A student must have saved CA/Test records for matching subjects.</span>
+      </article>
+
+      <article>
+        <i class="fa-solid fa-cloud"></i>
+        <strong>Supabase CBT is compulsory</strong>
+        <span>Reports are blocked when the selected admission number has no live CBT result.</span>
+      </article>
+
+      <article>
+        <i class="fa-solid fa-ranking-star"></i>
+        <strong>Subject stats are calculated</strong>
+        <span>POS, OUT OF, LOW, HIGH and CLASS AVE are generated subject by subject.</span>
+      </article>
+
+      <article>
+        <i class="fa-solid fa-pen-to-square"></i>
+        <strong>Remarks are editable</strong>
+        <span>Teacher remark, principal remark and ratings can be edited before printing.</span>
+      </article>
+    </div>
+  </div>
+</div>
+
+<div id="studentReportModal" class="report-modal" aria-hidden="true">
+  <div class="report-modal-panel wide">
+    <div class="report-modal-head">
+      <div>
+        <span class="section-kicker">Student Details</span>
+        <h3 id="studentReportModalTitle">Student Report Data</h3>
+        <p id="studentReportModalSubtext">CA/Test, CBT, attendance and subject statistics.</p>
+      </div>
+
+      <button type="button" class="report-modal-close" data-close-modal="studentReportModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div id="studentReportModalBody" class="report-modal-body">
+      <div class="report-empty-small">
+        <i class="fa-solid fa-user-graduate"></i>
+        <strong>No student selected</strong>
+        <span>Select a student from the loaded list.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="remarksTraitsModal" class="report-modal" aria-hidden="true">
+  <div class="report-modal-panel fullscreen-soft">
+    <div class="report-modal-head">
+      <div>
+        <span class="section-kicker">Editable Report Details</span>
+        <h3>Remarks, Affective Traits & Psychomotor Ratings</h3>
+        <p>Edit selected student report details before printing or saving as PDF.</p>
+      </div>
+
+      <button type="button" class="report-modal-close" data-close-modal="remarksTraitsModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="report-modal-body remarks-editor-grid">
+      <section class="remarks-editor-card">
+        <h4><i class="fa-solid fa-user-graduate"></i> Student</h4>
+
+        <div class="form-group">
+          <label class="form-label">Selected Student</label>
+          <select id="remarksStudentSelect" class="form-input">
+            <option value="">Select generated student</option>
+          </select>
+        </div>
+
+        <div class="remarks-student-summary" id="remarksStudentSummary">
+          <span>No student selected</span>
+        </div>
+      </section>
+
+      <section class="remarks-editor-card">
+        <h4><i class="fa-solid fa-message"></i> Remarks</h4>
+
+        <div class="form-group">
+          <label class="form-label">Form Teacher Name</label>
+          <input id="remarksFormTeacherInput" class="form-input" type="text" placeholder="Form teacher name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Teacher's Remark</label>
+          <textarea id="teacherRemarkInput" class="form-input report-textarea" rows="4" placeholder="Teacher's remark"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Principal's Remark</label>
+          <textarea id="principalRemarkInput" class="form-input report-textarea" rows="3" placeholder="Principal's remark"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Next Term Begins</label>
+          <input id="remarksNextTermInput" class="form-input" type="date">
+        </div>
+
+        <div class="remarks-suggestion-row">
+          <button type="button" id="useAutoTeacherRemarkBtn" class="report-mini-btn">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            Use Auto Teacher Remark
+          </button>
+
+          <button type="button" id="useAutoPrincipalRemarkBtn" class="report-mini-btn">
+            <i class="fa-solid fa-wand-magic"></i>
+            Use Auto Principal Remark
+          </button>
+        </div>
+      </section>
+
+      <section class="remarks-editor-card">
+        <h4><i class="fa-solid fa-heart"></i> Affective Traits</h4>
+
+        <div class="traits-rating-grid">
+          <label>Punctuality <input id="traitPunctuality" type="number" min="1" max="6" value="4"></label>
+          <label>Attendance <input id="traitAttendance" type="number" min="1" max="6" value="4"></label>
+          <label>Reliability <input id="traitReliability" type="number" min="1" max="6" value="4"></label>
+          <label>Neatness <input id="traitNeatness" type="number" min="1" max="6" value="4"></label>
+          <label>Politeness <input id="traitPoliteness" type="number" min="1" max="6" value="4"></label>
+          <label>Honesty <input id="traitHonesty" type="number" min="1" max="6" value="4"></label>
+          <label>Relationship <input id="traitRelationship" type="number" min="1" max="6" value="4"></label>
+          <label>Self Control <input id="traitSelfControl" type="number" min="1" max="6" value="4"></label>
+          <label>Attentiveness <input id="traitAttentiveness" type="number" min="1" max="6" value="4"></label>
+          <label>Perseverance <input id="traitPerseverance" type="number" min="1" max="6" value="4"></label>
+        </div>
+      </section>
+
+      <section class="remarks-editor-card">
+        <h4><i class="fa-solid fa-person-running"></i> Psychomotor</h4>
+
+        <div class="traits-rating-grid">
+          <label>Handwriting <input id="psyHandwriting" type="number" min="1" max="6" value="4"></label>
+          <label>Games <input id="psyGames" type="number" min="1" max="6" value="4"></label>
+          <label>Sport <input id="psySport" type="number" min="1" max="6"></label>
+          <label>Drawing & Painting <input id="psyDrawing" type="number" min="1" max="6" value="4"></label>
+          <label>Crafts <input id="psyCrafts" type="number" min="1" max="6" value="4"></label>
+          <label>Musical Skills <input id="psyMusic" type="number" min="1" max="6" value="4"></label>
+        </div>
+      </section>
+    </div>
+
+    <div class="report-modal-footer">
+      <button type="button" id="resetTraitsBtn" class="report-btn neutral">
+        <i class="fa-solid fa-rotate-left"></i>
+        Reset Ratings
+      </button>
+
+      <button type="button" id="applyRemarksTraitsBtn" class="report-btn success">
+        <i class="fa-solid fa-check"></i>
+        Apply to Report
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="savedReportsModal" class="report-modal" aria-hidden="true">
+  <div class="report-modal-panel wide">
+    <div class="report-modal-head">
+      <div>
+        <span class="section-kicker">Generated Records</span>
+        <h3>Saved / Generated Report Sheets</h3>
+        <p>Open, print, export or delete generated report sheets.</p>
+      </div>
+
+      <button type="button" class="report-modal-close" data-close-modal="savedReportsModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="report-table-wrap">
+      <table class="report-saved-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Admission No</th>
+            <th>Student Name</th>
+            <th>Class</th>
+            <th>Average</th>
+            <th>Grade</th>
+            <th>Subjects</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody id="savedReportsTableBody">
+          <tr>
+            <td colspan="8" class="report-table-empty">
+              <i class="fa-solid fa-folder-open"></i>
+              <strong>No generated report yet</strong>
+              <span>Generate reports first, then they will appear here.</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="pdfPreviewModal" class="report-modal" aria-hidden="true">
+  <div class="report-modal-panel fullscreen">
+    <div class="report-modal-head">
+      <div>
+        <span class="section-kicker">PDF Preview</span>
+        <h3>Printable Report Sheet View</h3>
+        <p>Use browser print and save as PDF.</p>
+      </div>
+
+      <div class="report-modal-actions">
+        <button type="button" id="printPdfPreviewBtn" class="report-mini-btn">
+          <i class="fa-solid fa-print"></i>
+          Print PDF
+        </button>
+
+        <button type="button" class="report-modal-close" data-close-modal="pdfPreviewModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="pdfPreviewCanvas" class="report-pdf-preview-canvas">
+      <div class="report-empty">
+        <i class="fa-solid fa-file-pdf"></i>
+        <strong>No PDF preview yet</strong>
+        <span>Select or generate a report first.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/report_sheet_pdf.js') }}"></script>
+<script src="{{ url_for('static', filename='js/report_sheet.js') }}"></script>
 {% endblock %}
