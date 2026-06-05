@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login — Staff Management Software</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/admin_login.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script defer
+            src="{{ url_for('static', filename='js/admin_login.js') }}"></script>
+</head>
+
+<body>
+
+<div class="login-layout">
+
+    <!-- =======================================================
+         LEFT SIDE HERO
+    ======================================================== -->
+    <section class="login-hero">
+
+        <div class="hero-overlay"></div>
+
+        <img
+            src="{{ url_for('static', filename='images/background.png') }}"
+            alt="EMIS Background"
+            class="hero-image">
+
+        <div class="hero-content">
+
+            <div class="hero-brand">
+                <img
+                    src="{{ url_for('static', filename='images/orbit.png') }}"
+                    alt="Orbit Logo">
+            </div>
+
+            <span class="hero-kicker">
+                Staff Management Software
+            </span>
+
+            <h1>
+                Empowering
+                <span>Education</span>
+                Together
+            </h1>
+
+            <p>
+                Smart tools for managing students, attendance,
+                CA tests, report sheets and academic records.
+            </p>
+
+            <div class="hero-features">
+
+                <div class="hero-feature">
+                    <i class="fa-solid fa-user-graduate"></i>
+                    <span>Students</span>
+                </div>
+
+                <div class="hero-feature">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>Attendance</span>
+                </div>
+
+                <div class="hero-feature">
+                    <i class="fa-solid fa-clipboard-check"></i>
+                    <span>CA Tests</span>
+                </div>
+
+                <div class="hero-feature">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>Reports</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- =======================================================
+         LOGIN CARD
+    ======================================================== -->
+    <section class="login-panel">
+
+        <div class="admin-login-card">
+
+            <div class="login-brand">
+
+                <img
+                    src="{{ url_for('static', filename='images/orbit.png') }}"
+                    alt="Orbit Logo">
+
+                <div>
+                    <strong>Staff Management Software</strong>
+                    <small>EMIS Orbit</small>
+                </div>
+
+            </div>
+
+            <div class="login-heading">
+
+                <span class="login-kicker">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Admin Access
+                </span>
+
+                <h2>Welcome Back</h2>
+
+                <p>
+                    Login to continue managing students,
+                    attendance, CA tests and report sheets.
+                </p>
+
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="login-flash-stack">
+                        {% for category, message in messages %}
+                            <div class="login-flash {{ category }}">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="admin-login-form">
+
+                <div class="login-field">
+
+                    <label>Username</label>
+
+                    <div class="login-input-wrap">
+                        <i class="fa-solid fa-user-shield"></i>
+
+                        <input
+                            type="text"
+                            name="username"
+                            placeholder="Enter username"
+                            required
+                            autofocus>
+                    </div>
+
+                </div>
+
+                <div class="login-field">
+
+                    <label>Password</label>
+
+                    <div class="login-input-wrap">
+
+                        <i class="fa-solid fa-lock"></i>
+
+                        <input
+                            id="passwordInput"
+                            type="password"
+                            name="password"
+                            placeholder="Enter password"
+                            required>
+
+                        <button
+                            type="button"
+                            id="togglePasswordBtn"
+                            class="toggle-password">
+
+                            <i class="fa-solid fa-eye"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="login-submit-btn">
+
+                    <i class="fa-solid fa-right-to-bracket"></i>
+
+                    <span>Login</span>
+
+                </button>
+
+            </form>
+
+            <div class="login-footer-note">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                Secure Admin Portal
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+</body>
+</html>

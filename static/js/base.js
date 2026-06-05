@@ -313,9 +313,9 @@ function initSidebarMobile() {
 /* ============================================================
    DESKTOP SIDEBAR COLLAPSE
 ============================================================ */
-
 /* ============================================================
-   DESKTOP SIDEBAR COLLAPSE + AUTO EXPAND/COLLAPSE
+   DESKTOP SIDEBAR COLLAPSE
+   Fixed: only toggle button controls expand/collapse
 ============================================================ */
 
 function initSidebarCollapse() {
@@ -324,12 +324,14 @@ function initSidebarCollapse() {
 
   if (!sidebar || !collapseBtn) return;
 
-  const AUTO_COLLAPSE_DELAY = 60 * 1000; // 1 minute
-  let autoCollapseTimer = null;
-  let sidebarHovered = false;
-
   function isDesktop() {
     return window.innerWidth > 900;
+  }
+
+  function closeAllSidebarSubmenus() {
+    document.querySelectorAll(".sidebar-item.has-submenu").forEach(function (item) {
+      item.classList.remove("open");
+    });
   }
 
   function collapseSidebar(saveState = true) {
@@ -352,44 +354,15 @@ function initSidebarCollapse() {
     if (saveState) {
       localStorage.setItem("smsSidebarCollapsed", "false");
     }
-
-    startAutoCollapseTimer();
-  }
-
-  function clearAutoCollapseTimer() {
-    if (autoCollapseTimer) {
-      clearTimeout(autoCollapseTimer);
-      autoCollapseTimer = null;
-    }
-  }
-
-  function startAutoCollapseTimer() {
-    clearAutoCollapseTimer();
-
-    if (!isDesktop()) return;
-    if (document.body.classList.contains("sidebar-collapsed")) return;
-    if (sidebarHovered) return;
-
-    autoCollapseTimer = setTimeout(function () {
-      if (!sidebarHovered) {
-        collapseSidebar(true);
-      }
-    }, AUTO_COLLAPSE_DELAY);
-  }
-
-  function closeAllSidebarSubmenus() {
-    document.querySelectorAll(".sidebar-item.has-submenu").forEach(function (item) {
-      item.classList.remove("open");
-    });
   }
 
   const savedState = localStorage.getItem("smsSidebarCollapsed");
 
   if (isDesktop()) {
-    if (savedState === "false") {
-      expandSidebar(false);
-    } else {
+    if (savedState === "true") {
       collapseSidebar(false);
+    } else {
+      expandSidebar(false);
     }
   }
 
@@ -405,40 +378,7 @@ function initSidebarCollapse() {
     }
   });
 
-  sidebar.addEventListener("mouseenter", function () {
-    if (!isDesktop()) return;
-
-    sidebarHovered = true;
-    clearAutoCollapseTimer();
-
-    if (document.body.classList.contains("sidebar-collapsed")) {
-      expandSidebar(false);
-    }
-  });
-
-  sidebar.addEventListener("mouseleave", function () {
-    if (!isDesktop()) return;
-
-    sidebarHovered = false;
-    startAutoCollapseTimer();
-  });
-
-  document.addEventListener("mousemove", function (event) {
-    if (!isDesktop()) return;
-
-    const isCollapsed = document.body.classList.contains("sidebar-collapsed");
-
-    if (!isCollapsed) return;
-
-    if (event.clientX <= 95) {
-      sidebarHovered = true;
-      expandSidebar(false);
-    }
-  });
-
   window.addEventListener("resize", function () {
-    clearAutoCollapseTimer();
-
     if (!isDesktop()) {
       document.body.classList.remove("sidebar-collapsed");
       return;
@@ -446,10 +386,10 @@ function initSidebarCollapse() {
 
     const currentSavedState = localStorage.getItem("smsSidebarCollapsed");
 
-    if (currentSavedState === "false") {
-      expandSidebar(false);
-    } else {
+    if (currentSavedState === "true") {
       collapseSidebar(false);
+    } else {
+      expandSidebar(false);
     }
   });
 }

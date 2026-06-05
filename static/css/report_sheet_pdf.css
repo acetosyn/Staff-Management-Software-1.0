@@ -1,0 +1,745 @@
+/* ==========================================================
+   REPORT SHEET PDF / PRINT DESIGN
+   STAFF MANAGEMENT SOFTWARE — OLD SCHOOL FORMAT UPGRADED
+   Clean print system:
+   - Screen preview remains beautiful
+   - Print uses ONLY #reportPrintCanvas
+   - Removes duplicate page conflict from old canvases
+========================================================== */
+
+.generated-report-sheet,
+.modern-report-sheet,
+.old-format-report-sheet {
+  box-sizing: border-box;
+}
+
+.generated-report-sheet *,
+.modern-report-sheet *,
+.old-format-report-sheet * {
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   MAIN PAPER — SCREEN / PREVIEW
+========================================================== */
+
+.modern-report-sheet,
+.old-format-report-sheet {
+  width: 1180px;
+  min-height: 790px;
+  margin: 0 auto;
+  padding: 18px 22px;
+  border: 2px solid #111827;
+  background: #ffffff;
+  color: #111827;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  line-height: 1.25;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+}
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.modern-report-header,
+.old-report-header {
+  display: grid;
+  grid-template-columns: 105px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 18px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eff6ff, #ffffff);
+}
+
+.modern-report-logo-box,
+.old-report-logo-box {
+  display: grid;
+  place-items: center;
+}
+
+.modern-report-logo-box img,
+.old-report-logo-box img {
+  width: 82px;
+  height: 82px;
+  object-fit: contain;
+}
+
+.modern-report-school,
+.old-report-school {
+  text-align: left;
+}
+
+.modern-report-school h1,
+.old-report-school h1 {
+  margin: 0;
+  color: #075985;
+  font-size: 27px;
+  line-height: 1.05;
+  font-weight: 950;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.modern-report-school p,
+.old-report-school p {
+  margin: 5px 0 3px;
+  color: #166534;
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.modern-report-school span,
+.old-report-school span {
+  display: block;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.modern-report-term {
+  display: none;
+}
+
+/* ==========================================================
+   REPORT TITLE
+========================================================== */
+
+.old-report-title {
+  margin: 10px 0 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+/* ==========================================================
+   STUDENT SUMMARY
+========================================================== */
+
+.old-report-student-summary {
+  margin-top: 0;
+}
+
+.old-report-name-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 13px;
+}
+
+.old-report-name-row span,
+.old-report-info-col span {
+  color: #334155;
+  font-weight: 800;
+}
+
+.old-report-name-row strong,
+.old-report-info-col strong {
+  color: #111827;
+  font-weight: 950;
+}
+
+.old-report-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 18px;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.old-report-info-col p {
+  display: grid;
+  grid-template-columns: 145px 1fr;
+  gap: 8px;
+  margin: 0 0 5px;
+  font-size: 12.5px;
+}
+
+.old-attendance-title {
+  display: block !important;
+  margin: 4px 0 5px !important;
+  color: #075985;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+/* ==========================================================
+   SUBJECT TABLE
+========================================================== */
+
+.modern-subject-section,
+.old-subject-section {
+  margin-top: 8px;
+}
+
+.modern-result-table,
+.old-result-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 11.2px;
+}
+
+.modern-result-table th,
+.modern-result-table td,
+.old-result-table th,
+.old-result-table td {
+  border: 1px solid #0f172a;
+  padding: 5px 4px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.modern-result-table th,
+.old-result-table th {
+  background: #dff1ff;
+  color: #0f172a;
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.modern-result-table th:first-child,
+.modern-result-table td:first-child,
+.old-result-table th:first-child,
+.old-result-table td:first-child {
+  width: 155px;
+  text-align: left;
+  font-weight: 900;
+}
+
+.modern-result-table th:last-child,
+.modern-result-table td:last-child,
+.old-result-table th:last-child,
+.old-result-table td:last-child {
+  width: 95px;
+  text-align: left;
+}
+
+.subject-name {
+  text-align: left !important;
+  font-weight: 900;
+}
+
+.score-good {
+  color: #166534 !important;
+  font-weight: 900;
+}
+
+.score-average {
+  color: #b45309 !important;
+  font-weight: 900;
+}
+
+.score-fail,
+.missing-score {
+  color: #be123c !important;
+  font-weight: 900;
+}
+
+.missing-score {
+  background: rgba(225, 29, 72, 0.06);
+}
+
+.empty-subject-row {
+  text-align: center !important;
+  padding: 14px !important;
+  color: #64748b;
+  font-weight: 900;
+}
+
+/* ==========================================================
+   GRADE DETAILS
+========================================================== */
+
+.old-grade-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 7px 0 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+}
+
+.old-grade-details div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.old-grade-details strong {
+  color: #111827;
+  font-weight: 950;
+}
+
+/* ==========================================================
+   TRAITS / PSYCHOMOTOR / SCALE
+========================================================== */
+
+.old-traits-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 18px;
+  margin-top: 6px;
+}
+
+.old-traits-table,
+.old-scale-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.4px;
+}
+
+.old-traits-table th,
+.old-traits-table td,
+.old-scale-table td {
+  border: 1px solid #111827;
+  padding: 4px 6px;
+}
+
+.old-traits-table th {
+  background: #f8fafc;
+  color: #111827;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.old-traits-table th:last-child,
+.old-traits-table td:last-child {
+  width: 80px;
+  text-align: center;
+  font-weight: 900;
+}
+
+.old-scale-table {
+  margin-top: 8px;
+  font-size: 10.4px;
+}
+
+.old-scale-table td:first-child {
+  font-weight: 950;
+  text-align: center;
+  background: #f8fafc;
+}
+
+/* ==========================================================
+   REMARKS
+========================================================== */
+
+.old-report-remarks {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid #111827;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.old-report-remarks p {
+  display: grid;
+  grid-template-columns: 185px 1fr;
+  gap: 10px;
+  margin: 0 0 5px;
+  font-size: 12px;
+}
+
+.old-report-remarks span {
+  color: #334155;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.old-report-remarks strong {
+  color: #111827;
+  font-weight: 850;
+}
+
+/* ==========================================================
+   LEGACY MODERN FALLBACK
+========================================================== */
+
+.modern-report-summary {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.modern-student-box,
+.modern-score-card {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.modern-student-box span,
+.modern-score-card span {
+  display: block;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.modern-student-box strong,
+.modern-score-card strong {
+  display: block;
+  margin-top: 4px;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.modern-student-box small,
+.modern-score-card small {
+  display: block;
+  margin-top: 3px;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.modern-report-meta {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.modern-report-meta p {
+  margin: 0;
+  font-size: 11px;
+}
+
+.modern-report-meta span {
+  display: block;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.modern-report-meta strong {
+  display: block;
+  margin-top: 2px;
+  color: #0f172a;
+  font-weight: 900;
+}
+
+.modern-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 0.7fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.modern-rating-box,
+.modern-remark-box,
+.modern-grade-key {
+  padding: 9px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.modern-rating-box h3,
+.modern-remark-box h3,
+.modern-grade-key h3 {
+  margin: 0 0 6px;
+  color: #075985;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.compact-traits {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+.compact-traits span,
+.modern-grade-key span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 6px;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.compact-traits strong {
+  color: #0f172a;
+}
+
+.modern-remark-box p {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 8px;
+  margin: 0 0 5px;
+  font-size: 11px;
+}
+
+.modern-remark-box span {
+  color: #64748b;
+  font-weight: 900;
+}
+
+.modern-remark-box strong {
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.modern-report-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #cbd5e1;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* ==========================================================
+   PDF PREVIEW CANVAS FIX
+========================================================== */
+
+.report-pdf-preview-canvas,
+.report-sheet-canvas {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(22, 163, 74, 0.07), transparent 24%),
+    linear-gradient(180deg, #f8fafc, #ffffff);
+}
+
+.report-pdf-preview-canvas .modern-report-sheet,
+.report-sheet-canvas .modern-report-sheet,
+.report-pdf-preview-canvas .old-format-report-sheet,
+.report-sheet-canvas .old-format-report-sheet {
+  margin: 0 auto;
+}
+
+/* Hidden print-only canvas on screen */
+#reportPrintCanvas {
+  display: none;
+}
+
+/* ==========================================================
+   PRINT VERSION — CLEAN A4 LANDSCAPE
+   IMPORTANT:
+   This print system uses ONLY:
+   body.report-printing-now #reportPrintCanvas
+
+   Do not re-add:
+   body.report-print-selected-only #reportSheetCanvas
+   body.report-print-pdf-only #pdfPreviewCanvas
+========================================================== */
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 7mm;
+  }
+
+  html,
+  body {
+    width: 100% !important;
+    min-height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.report-printing-now > *:not(#reportPrintCanvas) {
+    display: none !important;
+  }
+
+  body.report-printing-now #reportPrintCanvas {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  body.report-printing-now #reportPrintCanvas * {
+    visibility: visible !important;
+  }
+
+  body.report-printing-now .generated-report-sheet,
+  body.report-printing-now .modern-report-sheet,
+  body.report-printing-now .old-format-report-sheet {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 7mm !important;
+    border: 2px solid #000 !important;
+    box-shadow: none !important;
+    color: #000 !important;
+    background: #ffffff !important;
+    transform: none !important;
+    overflow: visible !important;
+  }
+
+  body.report-printing-now .old-format-report-page {
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+
+  body.report-printing-now .old-format-report-page:last-child {
+    break-after: auto !important;
+    page-break-after: auto !important;
+  }
+
+  body.report-printing-now .modern-report-header,
+  body.report-printing-now .old-report-header {
+    grid-template-columns: 88px 1fr !important;
+    padding: 9px 12px !important;
+    border: 1.5px solid #000 !important;
+    background: #ffffff !important;
+    border-radius: 0 !important;
+  }
+
+  body.report-printing-now .modern-report-logo-box img,
+  body.report-printing-now .old-report-logo-box img {
+    width: 72px !important;
+    height: 72px !important;
+  }
+
+  body.report-printing-now .modern-report-school h1,
+  body.report-printing-now .old-report-school h1 {
+    font-size: 24px !important;
+    color: #000 !important;
+  }
+
+  body.report-printing-now .modern-report-school p,
+  body.report-printing-now .modern-report-school span,
+  body.report-printing-now .old-report-school p,
+  body.report-printing-now .old-report-school span {
+    color: #000 !important;
+  }
+
+  body.report-printing-now .old-report-title {
+    border: 1px solid #000 !important;
+    background: #ffffff !important;
+    color: #000 !important;
+    border-radius: 0 !important;
+  }
+
+  body.report-printing-now .old-report-info-grid {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 12px !important;
+    padding: 8px 10px !important;
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+  }
+
+  body.report-printing-now .old-report-info-col p {
+    font-size: 12px !important;
+    grid-template-columns: 132px 1fr !important;
+  }
+
+  body.report-printing-now .modern-result-table,
+  body.report-printing-now .old-result-table {
+    font-size: 10.8px !important;
+    page-break-inside: auto !important;
+  }
+
+  body.report-printing-now .modern-result-table thead,
+  body.report-printing-now .old-result-table thead {
+    display: table-header-group !important;
+  }
+
+  body.report-printing-now .modern-result-table tr,
+  body.report-printing-now .old-result-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  body.report-printing-now .modern-result-table th,
+  body.report-printing-now .modern-result-table td,
+  body.report-printing-now .old-result-table th,
+  body.report-printing-now .old-result-table td {
+    border: 1px solid #000 !important;
+    padding: 4.5px 3px !important;
+    color: #000 !important;
+  }
+
+  body.report-printing-now .modern-result-table th,
+  body.report-printing-now .old-result-table th {
+    background: #f1f5f9 !important;
+    color: #000 !important;
+    font-size: 9.4px !important;
+  }
+
+  body.report-printing-now .old-grade-details {
+    border: 1px solid #000 !important;
+    background: #ffffff !important;
+    font-size: 11.4px !important;
+    border-radius: 0 !important;
+  }
+
+  body.report-printing-now .old-traits-grid {
+    gap: 14px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  body.report-printing-now .old-traits-table,
+  body.report-printing-now .old-scale-table {
+    font-size: 10.8px !important;
+  }
+
+  body.report-printing-now .old-traits-table th,
+  body.report-printing-now .old-traits-table td,
+  body.report-printing-now .old-scale-table td {
+    border: 1px solid #000 !important;
+    padding: 3.5px 5px !important;
+    color: #000 !important;
+  }
+
+  body.report-printing-now .old-report-remarks {
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+  }
+
+  body.report-printing-now .old-report-remarks p {
+    font-size: 11.5px !important;
+  }
+
+  body.report-printing-now .modern-report-footer {
+    color: #000 !important;
+  }
+}

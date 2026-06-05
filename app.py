@@ -1,4 +1,6 @@
-from flask import Flask, render_template, send_from_directory, Blueprint
+import os
+from flask import Flask, render_template, send_from_directory, Blueprint, redirect, url_for
+from dotenv import load_dotenv
 
 from dashboard.routes import dashboard_bp
 from students.routes import students_bp
@@ -7,6 +9,10 @@ from ca_test.routes import ca_tests_bp
 from reports.routes import reports_bp
 from promotion.routes import promotion_bp
 from settings.routes import settings_bp
+from auth.routes import auth_bp
+
+
+load_dotenv()
 
 
 classes_bp = Blueprint("classes", __name__)
@@ -26,7 +32,9 @@ def staff_list():
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
 
-    app.config["SECRET_KEY"] = "staff-management-secret-key"
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "staff-management-secret-key")
+
+    app.register_blueprint(auth_bp)
 
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(students_bp, url_prefix="/students")
@@ -39,6 +47,10 @@ def create_app():
     # temporary placeholders because base.html sidebar already uses them
     app.register_blueprint(classes_bp, url_prefix="/classes")
     app.register_blueprint(staff_bp, url_prefix="/staff")
+
+    @app.route("/")
+    def index():
+        return redirect(url_for("auth.admin_login"))
 
     @app.route("/favicon.ico")
     def favicon():

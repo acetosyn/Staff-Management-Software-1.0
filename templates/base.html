@@ -241,11 +241,20 @@
             <i class="fa-solid fa-user-shield"></i>
           </span>
 
-          <div class="sidebar-user-text">
+          <!-- <div class="sidebar-user-text">
             <strong>{{ session.get('username', 'Admin') }}</strong>
             <small>System Administrator</small>
           </div>
-        </div>
+        </div> -->
+
+        <a href="{{ url_for('auth.logout') }}" class="sidebar-logout-btn" title="Logout">
+          <span class="sidebar-icon">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </span>
+          <span class="sidebar-label">Logout</span>
+        </a>
+
+        
       </div>
 
     </aside>
